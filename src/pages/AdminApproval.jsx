@@ -150,7 +150,7 @@ export default function AdminApproval() {
           <div className="flex items-center gap-3">
             <ShieldAlert className="text-sky-500" size={30} />
             <h1 className="text-3xl font-extrabold">
-              Admin User Manag.
+              User Manag.
             </h1>
           </div>
 
@@ -185,98 +185,131 @@ export default function AdminApproval() {
           />
         </div>
 
-        {/* CONTENT */}
-        {loading ? (
-          <div className="flex justify-center p-10">
-            <Loader2 className="animate-spin" size={32} />
-          </div>
-        ) : filteredUsers.length === 0 ? (
-          <div className={`p-10 rounded-2xl text-center ${card}`}>
-            No users found
-          </div>
-        ) : (
-          <div className="grid gap-4">
-            {filteredUsers.map((u) => (
-              <div key={u.id} className={`p-5 rounded-2xl ${card}`}>
-                <div className="grid md:grid-cols-5 gap-4 items-center">
-                  {/* USER */}
-                  <div className="flex items-center gap-3">
-                    <UserCog className="text-sky-500" />
-                    <div>
-                      <p className="font-bold">{u.name || "No name"}</p>
-                      <p className="text-xs opacity-60">{u.email}</p>
-                    </div>
-                  </div>
+       {loading ? (
+  <div className="flex justify-center p-10">
+    <Loader2 className="animate-spin" size={32} />
+  </div>
+) : filteredUsers.length === 0 ? (
+  <div className={`p-10 rounded-2xl text-center ${card}`}>
+    No users found
+  </div>
+) : (
+  <div
+    className={`rounded-2xl overflow-x-auto ${card}`}
+    style={{ maxHeight: "65vh" }}
+  >
+    <table className="min-w-full text-sm">
+      <thead className="sticky top-0 backdrop-blur bg-black/5">
+        <tr className="border-b">
+          <th className="p-3 text-left">User</th>
+          <th className="p-3 text-left">Role</th>
+          <th className="p-3 text-left">Branch</th>
+          <th className="p-3 text-center">Approve</th>
+          <th className="p-3 text-center">Delete</th>
+        </tr>
+      </thead>
 
-                  {/* ROLE */}
-                  <select
-                    value={u.role}
-                    onChange={(e) =>
-                      updateUser(u.id, {
-                        role: e.target.value,
-                        branchId:
-                          e.target.value === "gm" ? null : u.branchId,
-                      })
-                    }
-                    className={`p-2 rounded-xl ${input}`}
-                  >
-                    {ROLES.map((r) => (
-                      <option key={r.value} value={r.value}>
-                        {r.label}
-                      </option>
-                    ))}
-                  </select>
+      <tbody>
+        {filteredUsers.map((u) => (
+          <tr
+            key={u.id}
+            className="border-b hover:bg-black/5 transition"
+          >
+            {/* USER */}
+            <td className="p-3">
+              <p className="font-semibold">
+                {u.name || "No name"}
+              </p>
+              <p className="text-xs opacity-60">
+                {u.email}
+              </p>
+            </td>
 
-                  {/* BRANCH */}
-                  <select
-                    disabled={u.role === "gm"}
-                    value={u.branchId || ""}
-                    onChange={(e) =>
-                      updateUser(u.id, { branchId: e.target.value })
-                    }
-                    className={`p-2 rounded-xl disabled:opacity-40 ${input}`}
-                  >
-                    <option value="">No Branch</option>
-                    {BRANCHES.map((b) => (
-                      <option key={b} value={b}>
-                        {b}
-                      </option>
-                    ))}
-                  </select>
+            {/* ROLE */}
+            <td className="p-3">
+              <select
+                value={u.role}
+                onChange={(e) =>
+                  updateUser(u.id, {
+                    role: e.target.value,
+                    branchId:
+                      e.target.value === "gm"
+                        ? null
+                        : u.branchId,
+                  })
+                }
+                className={`px-2 py-1 rounded-lg text-xs ${input}`}
+              >
+                {ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+            </td>
 
-                  {/* APPROVE */}
-                  <button
-                    disabled={u.approved || processing === u.id}
-                    onClick={() => updateUser(u.id, { approved: true })}
-                    className={`px-4 py-2 rounded-xl font-bold
-                      ${
-                        u.approved
-                          ? "bg-green-500/20 text-green-600"
-                          : "bg-sky-600 text-white hover:bg-sky-500"
-                      }`}
-                  >
-                    {processing === u.id ? (
-                      <Loader2 className="animate-spin" size={18} />
-                    ) : u.approved ? (
-                      <CheckCircle size={18} />
-                    ) : (
-                      "Approve"
-                    )}
-                  </button>
+            {/* BRANCH */}
+            <td className="p-3">
+              <select
+                disabled={u.role === "gm"}
+                value={u.branchId || ""}
+                onChange={(e) =>
+                  updateUser(u.id, {
+                    branchId: e.target.value,
+                  })
+                }
+                className={`px-2 py-1 rounded-lg text-xs disabled:opacity-40 ${input}`}
+              >
+                <option value="">—</option>
+                {BRANCHES.map((b) => (
+                  <option key={b} value={b}>
+                    {b}
+                  </option>
+                ))}
+              </select>
+            </td>
 
-                  {/* DELETE */}
-                  <button
-                    disabled={processing === u.id}
-                    onClick={() => deleteUser(u.id, u.name)}
-                    className="px-4 py-2 rounded-xl bg-red-600 text-white hover:bg-red-500 flex items-center justify-center"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+            {/* APPROVE */}
+            <td className="p-3 text-center">
+              <button
+                disabled={u.approved || processing === u.id}
+                onClick={() =>
+                  updateUser(u.id, { approved: true })
+                }
+                className={`px-3 py-1 rounded-full text-xs font-semibold
+                  ${
+                    u.approved
+                      ? "bg-green-500/20 text-green-600"
+                      : "bg-sky-600 text-white hover:bg-sky-500"
+                  }`}
+              >
+                {processing === u.id ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : u.approved ? (
+                  "Approved"
+                ) : (
+                  "Approve"
+                )}
+              </button>
+            </td>
+
+            {/* DELETE */}
+            <td className="p-3 text-center">
+              <button
+                disabled={processing === u.id}
+                onClick={() => deleteUser(u.id, u.name)}
+                className="p-2 rounded-lg bg-red-600 hover:bg-red-500 text-white"
+              >
+                <Trash2 size={14} />
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+
       </motion.div>
     </div>
   );
