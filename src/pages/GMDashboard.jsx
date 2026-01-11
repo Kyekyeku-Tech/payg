@@ -269,6 +269,13 @@ const paginatedData = useMemo(() => {
   <Users size={14} />
   Approvals
 </button>
+<button
+  onClick={() => navigate("/gm/leaderboard")}
+  className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-sm font-medium"
+>
+  Leaderboard
+</button>
+
 
 
             <LogoutButton />
@@ -295,7 +302,7 @@ const paginatedData = useMemo(() => {
     </p>
   </div>
 
-  <div className={`p-5 rounded-2xl ${card}text-center`}>
+  <div className={`p-5 rounded-2xl ${card} text-center`}>
     <p className="text-sm opacity-70">Monthly Commission</p>
     <p className="text-2xl font-bold">GHS {totalMonth}</p>
     <p className="text-xs opacity-60">

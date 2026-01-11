@@ -193,7 +193,7 @@ const totalCommission = useMemo(
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-bold flex items-center gap-2">
-              <User size={22} /> Agent Dashboard
+              <User size={22} /> Agent| DSR
             </h2>
             <p className="text-sm opacity-70">
               Welcome back, {user?.name || "Agent"}

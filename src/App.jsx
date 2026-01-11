@@ -7,6 +7,8 @@ import HeadDashboard from "./pages/HeadDashboard";
 import GMDashboard from "./pages/GMDashboard";
 import AdminApproval from "./pages/AdminApproval";
 import PrivateRoute from "./components/PrivateRoute";
+import AgentLeaderboard from "./pages/AgentLeaderboard";
+
 
 export default function App() {
   return (
@@ -24,6 +26,11 @@ export default function App() {
             />
           }
         />
+        <Route
+  path="/gm/leaderboard"
+  element={<AgentLeaderboard />}
+/>
+
 
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />

@@ -20,6 +20,8 @@ export default function HeadDashboard() {
   const [loading, setLoading] = useState(true);
   const [theme, setTheme] = useState("light");
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedAgent, setSelectedAgent] = useState("");
+
   const [page, setPage] = useState(1);
 
   /* ================= AUTH ================= */
@@ -77,14 +79,27 @@ export default function HeadDashboard() {
 
   /* ================= DATE FILTER ================= */
   const filteredReports = useMemo(() => {
-    if (!selectedDate) return reports;
-    const picked = new Date(selectedDate).toDateString();
-    return reports.filter(
-      (r) =>
-        r.createdAt?.toDate &&
-        r.createdAt.toDate().toDateString() === picked
-    );
-  }, [reports, selectedDate]);
+  return reports.filter((r) => {
+    // date filter
+    if (selectedDate) {
+      const picked = new Date(selectedDate).toDateString();
+      if (
+        !r.createdAt?.toDate ||
+        r.createdAt.toDate().toDateString() !== picked
+      ) {
+        return false;
+      }
+    }
+
+    // agent filter
+    if (selectedAgent && r.agentId !== selectedAgent) {
+      return false;
+    }
+
+    return true;
+  });
+}, [reports, selectedDate, selectedAgent]);
+
 
   /* ================= RESET PAGE ================= */
   useEffect(() => {
@@ -128,6 +143,27 @@ export default function HeadDashboard() {
     (s, r) => s + Number(r.commission || 0),
     0
   );
+  /* ================= AGENT TOTAL PERFORMANCE ================= */
+const agentTotals = useMemo(() => {
+  const map = {};
+
+  filteredReports.forEach((r) => {
+    if (!map[r.agentId]) {
+      map[r.agentId] = {
+        amount: 0,
+        commission: 0,
+        count: 0,
+      };
+    }
+
+    map[r.agentId].amount += Number(r.amount || 0);
+    map[r.agentId].commission += Number(r.commission || 0);
+    map[r.agentId].count += 1;
+  });
+
+  return map;
+}, [filteredReports]);
+
   const exportToCSV = () => {
   if (!filteredReports.length) {
     alert("No data to export");
@@ -221,6 +257,24 @@ export default function HeadDashboard() {
         : "bg-white text-black border-black/30 [color-scheme:light]"
     }`}
 />
+{/* AGENT FILTER */}
+<select
+  value={selectedAgent}
+  onChange={(e) => setSelectedAgent(e.target.value)}
+  className={`mb-6 p-2 rounded-lg border
+    ${
+      theme === "dark"
+        ? "bg-black/40 text-white border-white/40"
+        : "bg-white text-black border-black/30"
+    }`}
+>
+  <option value="">All Agents</option>
+  {Object.entries(agents).map(([id, name]) => (
+    <option key={id} value={id}>
+      {name}
+    </option>
+  ))}
+</select>
 
 
         {/* DASHBOARD */}
@@ -255,6 +309,41 @@ export default function HeadDashboard() {
     Export CSV
   </button>
 </div>
+{/* AGENT PERFORMANCE SUMMARY */}
+{selectedAgent && agentTotals[selectedAgent] && (
+  <div className={`mb-6 p-4 rounded-xl ${card} text-center`}>
+    <p className="text-sm opacity-70">
+      Agent Performance
+    </p>
+
+    <p className="text-lg font-bold">
+      {agents[selectedAgent]}
+    </p>
+
+    <div className="grid grid-cols-3 gap-4 mt-3 text-sm">
+      <div>
+        <p className="opacity-60">Transactions</p>
+        <p className="font-bold">
+          {agentTotals[selectedAgent].count}
+        </p>
+      </div>
+
+      <div>
+        <p className="opacity-60">Total Amount</p>
+        <p className="font-bold">
+          GHS {agentTotals[selectedAgent].amount}
+        </p>
+      </div>
+
+      <div>
+        <p className="opacity-60">Commission</p>
+        <p className="font-bold text-emerald-500">
+          GHS {agentTotals[selectedAgent].commission}
+        </p>
+      </div>
+    </div>
+  </div>
+)}
 
         {/* TABLE */}
         <div className={`p-4 rounded-xl ${card}`}>
