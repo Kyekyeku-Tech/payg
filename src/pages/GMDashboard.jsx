@@ -149,6 +149,18 @@ export default function GMDashboard() {
         .reduce((s, r) => s + Number(r.commission || 0), 0),
     [reports]
   );
+/* ================= GLOBAL COUNTS ================= */
+const todayCount = useMemo(
+  () =>
+    reports.filter(r => isToday(r.createdAt)).length,
+  [reports]
+);
+
+const monthCount = useMemo(
+  () =>
+    reports.filter(r => isThisMonth(r.createdAt)).length,
+  [reports]
+);
 
   /* ================= BRANCH TOTALS ================= */
   const branchToday = useMemo(
@@ -174,6 +186,26 @@ export default function GMDashboard() {
         .reduce((s, r) => s + Number(r.commission || 0), 0),
     [reports, activeBranch]
   );
+/* ================= BRANCH COUNTS ================= */
+const branchTodayCount = useMemo(
+  () =>
+    reports.filter(
+      r =>
+        r.branchId === activeBranch &&
+        isToday(r.createdAt)
+    ).length,
+  [reports, activeBranch]
+);
+
+const branchMonthCount = useMemo(
+  () =>
+    reports.filter(
+      r =>
+        r.branchId === activeBranch &&
+        isThisMonth(r.createdAt)
+    ).length,
+  [reports, activeBranch]
+);
 
   /* ================= TABLE DATA ================= */
   const tableData = useMemo(() => {
@@ -200,9 +232,9 @@ const paginatedData = useMemo(() => {
       : "bg-gray-100 text-black";
 
   const card =
-    theme === "dark"
-      ? "bg-white/5 border border-white/10"
-      : "bg-white border border-black/10";
+  theme === "dark"
+    ? "bg-white/5 border border-white/40"
+    : "bg-white border border-black/10";
 
   const btn =
     theme === "dark"
@@ -216,9 +248,9 @@ const paginatedData = useMemo(() => {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-3xl font-bold">GM Dashboard</h2>
+            <h2 className="text-3xl font-bold">Management</h2>
             <p className="opacity-70 text-sm">
-              Daily & Monthly Performance
+              Daily & Monthly Tracker
             </p>
           </div>
 
@@ -244,17 +276,44 @@ const paginatedData = useMemo(() => {
         </div>
 
         {/* GLOBAL DASHBOARD */}
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <div className={`p-6 rounded-2xl ${card}`}>
-            <p className="text-sm opacity-70">Total Commission (TODAY)</p>
-            <p className="text-3xl font-bold">GHS {totalToday}</p>
-          </div>
+<div className="grid md:grid-cols-4 gap-4 mb-6">
+  <div className={`p-5 rounded-2xl ${card} text-center`}>
+    <p className="text-sm opacity-70">Today Commission</p>
+    <p className="text-2xl font-bold">GHS {totalToday}</p>
+    <p className="text-xs opacity-60">
+      {todayCount} transactions
+    </p>
+  </div>
 
-          <div className={`p-6 rounded-2xl ${card}`}>
-            <p className="text-sm opacity-70">Total Commission (THIS MONTH)</p>
-            <p className="text-3xl font-bold">GHS {totalMonth}</p>
-          </div>
-        </div>
+  <div className={`p-5 rounded-2xl ${card} text-center`}>
+    <p className="text-sm opacity-70">Today Count</p>
+    <p className="text-2xl font-bold">
+      {todayCount}
+    </p>
+    <p className="text-xs opacity-60">
+      transactions
+    </p>
+  </div>
+
+  <div className={`p-5 rounded-2xl ${card}text-center`}>
+    <p className="text-sm opacity-70">Monthly Commission</p>
+    <p className="text-2xl font-bold">GHS {totalMonth}</p>
+    <p className="text-xs opacity-60">
+      {monthCount} transactions
+    </p>
+  </div>
+
+  <div className={`p-5 rounded-2xl ${card} text-center`}>
+    <p className="text-sm opacity-70">Monthly Count</p>
+    <p className="text-2xl font-bold">
+      {monthCount}
+    </p>
+    <p className="text-xs opacity-60">
+      transactions
+    </p>
+  </div>
+</div>
+
 
         {/* BRANCH SELECT */}
         <div className="flex flex-wrap gap-2 mb-4">
@@ -271,29 +330,52 @@ const paginatedData = useMemo(() => {
         </div>
 
         {/* BRANCH DASHBOARD */}
-        {activeBranch && (
-          <div className="grid md:grid-cols-2 gap-4 mb-6">
-            <div className={`p-5 rounded-2xl ${card}`}>
-              <p className="text-sm opacity-70">
-                {activeBranch} (TODAY)
-              </p>
-              <p className="text-2xl font-bold">
-                GHS {branchToday}
-              </p>
-            </div>
+{activeBranch && (
+  <div className="grid md:grid-cols-4 gap-4 mb-6">
+    <div className={`p-5 rounded-2xl ${card} text-center`}>
+      <p className="text-sm opacity-70">
+        {activeBranch} Today Commission
+      </p>
+      <p className="text-2xl font-bold">
+        GHS {branchToday}
+      </p>
+      <p className="text-xs opacity-60">
+        {branchTodayCount} transactions
+      </p>
+    </div>
 
-            <div className={`p-5 rounded-2xl ${card}`}>
-              <p className="text-sm opacity-70">
-                {activeBranch} (THIS MONTH)
-              </p>
-              <p className="text-2xl font-bold">
-                GHS {branchMonth}
-              </p>
-            </div>
-          </div>
-        )}
+    <div className={`p-5 rounded-2xl ${card} text-center`}>
+      <p className="text-sm opacity-70">
+        {activeBranch} Today Count
+      </p>
+      <p className="text-2xl font-bold">
+        {branchTodayCount}
+      </p>
+    </div>
 
-        {/* EXACT DATE FILTER (TABLE ONLY) */}
+    <div className={`p-5 rounded-2xl ${card} text-center`}>
+      <p className="text-sm opacity-70">
+        {activeBranch} Monthly Commission
+      </p>
+      <p className="text-2xl font-bold">
+        GHS {branchMonth}
+      </p>
+      <p className="text-xs opacity-60">
+        {branchMonthCount} transactions
+      </p>
+    </div>
+
+    <div className={`p-5 rounded-2xl ${card} text-center`}>
+      <p className="text-sm opacity-70">
+        {activeBranch} Monthly Count
+      </p>
+      <p className="text-2xl font-bold">
+        {branchMonthCount}
+      </p>
+    </div>
+  </div>
+)}
+
        {/* EXACT DATE FILTER + EXPORT */}
 {activeBranch && (
   <div className="flex items-center justify-between mb-3">
@@ -301,24 +383,31 @@ const paginatedData = useMemo(() => {
     {/* DATE FILTER */}
     <div className="flex items-center gap-2">
       <CalendarDays size={16} />
-      <input
-        type="date"
-        value={exactDate}
-        onChange={(e) => setExactDate(e.target.value)}
-        className="px-3 py-2 rounded-lg border"
-      />
+<input
+  type="date"
+  value={exactDate}
+  onChange={(e) => setExactDate(e.target.value)}
+  className={`mb-6 p-2 rounded-lg border
+    ${
+      theme === "dark"
+        ? "bg-black/40 text-white border-white/40 [color-scheme:dark]"
+        : "bg-white text-black border-black/30 [color-scheme:light]"
+    }`}
+/>
+
       <span className="text-sm opacity-70">
         Filter exact date
       </span>
     </div>
 
     {/* EXPORT BUTTON */}
-    <button
-      onClick={exportToCSV}
-      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold"
-    >
-      Export CSV
-    </button>
+   <button
+  onClick={exportToCSV}
+  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
+>
+  Export
+</button>
+
 
   </div>
 )}
