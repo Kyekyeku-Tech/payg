@@ -8,6 +8,7 @@ import GMDashboard from "./pages/GMDashboard";
 import AdminApproval from "./pages/AdminApproval";
 import PrivateRoute from "./components/PrivateRoute";
 import AgentLeaderboard from "./pages/AgentLeaderboard";
+import BranchReport from "./pages/BranchReport";
 
 
 export default function App() {
@@ -29,6 +30,10 @@ export default function App() {
         <Route
   path="/gm/leaderboard"
   element={<AgentLeaderboard />}
+/>
+<Route
+  path="/head/report"
+  element={<BranchReport />}
 />
 
 

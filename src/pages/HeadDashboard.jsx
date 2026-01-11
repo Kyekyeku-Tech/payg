@@ -8,6 +8,7 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import LogoutButton from "../components/LogoutButton";
 import { Moon, Sun } from "lucide-react";
@@ -23,6 +24,7 @@ export default function HeadDashboard() {
   const [selectedAgent, setSelectedAgent] = useState("");
 
   const [page, setPage] = useState(1);
+  const navigate = useNavigate();
 
   /* ================= AUTH ================= */
   useEffect(() => {
@@ -242,6 +244,12 @@ const agentTotals = useMemo(() => {
             >
               {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            <button
+  onClick={() => navigate("/head/report")}
+  className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-sm font-medium"
+>
+  Report
+</button>
             <LogoutButton />
           </div>
         </div>
