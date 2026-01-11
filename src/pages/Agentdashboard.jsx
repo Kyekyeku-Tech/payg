@@ -33,7 +33,9 @@ export default function AgentDashboard() {
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState("light"); // 🌞 default
+  const [theme, setTheme] = useState("light"); 
+  const [success, setSuccess] = useState(false);
+// 🌞 default
 
   const [form, setForm] = useState({
     customerName: "",
@@ -123,11 +125,15 @@ const input =
 
       // 🔥 instant UI update
       setReports((prev) => [
-        { id: ref.id, ...payload, createdAt: new Date() },
-        ...prev,
-      ]);
+  { id: ref.id, ...payload, createdAt: new Date() },
+  ...prev,
+]);
 
-      setForm({ customerName: "", amount: "" });
+setForm({ customerName: "", amount: "" });
+
+setSuccess(true);
+setTimeout(() => setSuccess(false), 3000);
+
     } catch (err) {
       console.error(err);
       alert("Submission failed");
@@ -139,12 +145,21 @@ const input =
   /* ================= TODAY HELPERS ================= */
 const todayStr = new Date().toDateString();
 
-const isToday = (ts) =>
-  ts?.toDate
-    ? ts.toDate().toDateString() === todayStr
-    : false;
+const isToday = (ts) => {
+  if (!ts) return false;
 
-    const todayReports = useMemo(
+  const date =
+    ts instanceof Date
+      ? ts
+      : ts.toDate
+      ? ts.toDate()
+      : null;
+
+  return date
+    ? date.toDateString() === todayStr
+    : false;
+};
+const todayReports = useMemo(
   () => reports.filter((r) => isToday(r.createdAt)),
   [reports]
 );
