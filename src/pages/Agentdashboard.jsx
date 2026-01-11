@@ -10,6 +10,7 @@ import {
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "../firebase";
 import LogoutButton from "../components/LogoutButton";
+import { BRANCH_CUSTOMERS } from "../data/branchCustomers";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -35,12 +36,35 @@ export default function AgentDashboard() {
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState("light"); 
   const [success, setSuccess] = useState(false);
+
 // 🌞 default
 
   const [form, setForm] = useState({
     customerName: "",
     amount: "",
   });
+
+    /* ================= CUSTOMER AUTOCOMPLETE ================= */
+  const [suggestions, setSuggestions] = useState([]);
+
+  const handleCustomerChange = (value) => {
+    setForm({ ...form, customerName: value });
+
+    if (!user?.branchId) return;
+
+    const list = BRANCH_CUSTOMERS[user.branchId] || [];
+
+    if (!value) {
+      setSuggestions([]);
+      return;
+    }
+
+    const filtered = list.filter((name) =>
+      name.toLowerCase().includes(value.toLowerCase())
+    );
+
+    setSuggestions(filtered.slice(0, 6));
+  };
 
   /* ================= THEME STYLES ================= */
   const pageBg =
@@ -257,14 +281,39 @@ const totalCommission = useMemo(
           </h3>
 
           <div className="grid gap-3">
-            <input
-              placeholder="Customer Name"
-              value={form.customerName}
-              onChange={(e) =>
-                setForm({ ...form, customerName: e.target.value })
-              }
-              className={`px-4 py-3 rounded-xl ${input}`}
-            />
+           <div className="relative">
+  <input
+    placeholder="Customer Name"
+    value={form.customerName}
+    onChange={(e) => handleCustomerChange(e.target.value)}
+    className={`px-4 py-3 rounded-xl w-full ${input}`}
+  />
+
+  {suggestions.length > 0 && (
+    <div
+      className={`absolute z-20 mt-1 w-full rounded-xl overflow-hidden shadow-xl
+        ${theme === "dark"
+          ? "bg-black border border-white/30"
+          : "bg-white border border-black/20"}
+      `}
+    >
+      {suggestions.map((name, i) => (
+        <button
+          key={i}
+          type="button"
+          onClick={() => {
+            setForm({ ...form, customerName: name });
+            setSuggestions([]);
+          }}
+          className={`w-full text-left px-4 py-2 text-sm hover:bg-sky-500/20`}
+        >
+          {name}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+
 
             <input
               type="number"
