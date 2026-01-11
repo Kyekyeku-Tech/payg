@@ -128,6 +128,44 @@ export default function HeadDashboard() {
     (s, r) => s + Number(r.commission || 0),
     0
   );
+  const exportToCSV = () => {
+  if (!filteredReports.length) {
+    alert("No data to export");
+    return;
+  }
+
+  const headers = [
+    "Date",
+    "Customer",
+    "Agent",
+    "Amount",
+    "Commission",
+  ];
+
+  const rows = filteredReports.map((r) => [
+    r.createdAt?.toDate
+      ? r.createdAt.toDate().toLocaleDateString()
+      : "",
+    r.customerName,
+    agents[r.agentId] || "Unknown",
+    r.amount,
+    r.commission,
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers, ...rows]
+      .map((row) => row.join(","))
+      .join("\n");
+
+  const link = document.createElement("a");
+  link.href = encodeURI(csvContent);
+  link.download = `${user.branchId}-transactions.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+
 
   const pageStyle =
     theme === "dark"
@@ -153,7 +191,7 @@ export default function HeadDashboard() {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-3xl font-bold">Branch Head Dashboard</h2>
+            <h2 className="text-3xl font-bold">Branch Head</h2>
             <p className="text-gray-500">
               Branch: <b>{user.branchId}</b>
             </p>
@@ -172,33 +210,51 @@ export default function HeadDashboard() {
           </div>
         </div>
 
-        {/* DATE FILTER */}
         <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="mb-6 p-2 border rounded-lg"
-        />
+  type="date"
+  value={selectedDate}
+  onChange={(e) => setSelectedDate(e.target.value)}
+  className={`mb-6 p-2 rounded-lg border
+    ${
+      theme === "dark"
+        ? "bg-black/40 text-white border-white/40 [color-scheme:dark]"
+        : "bg-white text-black border-black/30 [color-scheme:light]"
+    }`}
+/>
+
 
         {/* DASHBOARD */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
-          <div className={`p-4 rounded-xl ${card}`}>
+          <div className={`p-4 rounded-xl ${card} text-center`}>
             <p className="text-sm">Today</p>
             <p className="text-2xl font-bold">GHS {totalToday}</p>
           </div>
-          <div className={`p-4 rounded-xl ${card}`}>
+          <div className={`p-4 rounded-xl ${card} text-center`}>
             <p className="text-sm">This Month</p>
             <p className="text-2xl font-bold">GHS {totalMonth}</p>
           </div>
-          <div className={`p-4 rounded-xl ${card}`}>
+          <div className={`p-4 rounded-xl ${card} text-center`}>
             <p className="text-sm">All Time</p>
             <p className="text-2xl font-bold">GHS {totalAll}</p>
           </div>
-          <div className={`p-4 rounded-xl ${card}`}>
+          <div className={`p-4 rounded-xl ${card} text-center`}>
             <p className="text-sm">Selected Date</p>
             <p className="text-2xl font-bold">GHS {totalFiltered}</p>
           </div>
         </div>
+
+<div className="flex justify-between items-center mb-3">
+  <span className="text-sm font-semibold opacity-70">
+    Transactions
+  </span>
+
+  <button
+    onClick={exportToCSV}
+    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
+  >
+    Export CSV
+  </button>
+</div>
 
         {/* TABLE */}
         <div className={`p-4 rounded-xl ${card}`}>
