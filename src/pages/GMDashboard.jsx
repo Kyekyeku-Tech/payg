@@ -131,6 +131,72 @@ export default function GMDashboard() {
   link.click();
   document.body.removeChild(link);
 };
+/* ================= BRANCH FILTERED BASE ================= */
+const branchBaseReports = useMemo(() => {
+  if (!activeBranch) return [];
+  return reports.filter(r => r.branchId === activeBranch);
+}, [reports, activeBranch]);
+
+/* ================= SELECTED DATE / TODAY ================= */
+const branchSelectedReports = useMemo(() => {
+  if (!activeBranch) return [];
+
+  // If exactDate is chosen → use it
+  if (exactDate) {
+    return branchBaseReports.filter(r =>
+      isExactDate(r.createdAt)
+    );
+  }
+
+  // Otherwise default to TODAY
+  return branchBaseReports.filter(r =>
+    isToday(r.createdAt)
+  );
+}, [branchBaseReports, exactDate]);
+
+const branchSelectedCommission = useMemo(
+  () =>
+    branchSelectedReports.reduce(
+      (s, r) => s + Number(r.commission || 0),
+      0
+    ),
+  [branchSelectedReports]
+);
+
+const branchSelectedCount = branchSelectedReports.length;
+
+/* ================= MONTHLY ================= */
+const branchMonthReports = useMemo(
+  () =>
+    branchBaseReports.filter(r =>
+      isThisMonth(r.createdAt)
+    ),
+  [branchBaseReports]
+);
+
+const branchMonthCommission = useMemo(
+  () =>
+    branchMonthReports.reduce(
+      (s, r) => s + Number(r.commission || 0),
+      0
+    ),
+  [branchMonthReports]
+);
+
+const branchMonthCount = branchMonthReports.length;
+
+/* ================= ALL TIME ================= */
+const branchAllCommission = useMemo(
+  () =>
+    branchBaseReports.reduce(
+      (s, r) => s + Number(r.commission || 0),
+      0
+    ),
+  [branchBaseReports]
+);
+
+const branchAllCount = branchBaseReports.length;
+
 
 
   /* ================= GLOBAL TOTALS ================= */
@@ -162,67 +228,19 @@ const monthCount = useMemo(
   [reports]
 );
 
-  /* ================= BRANCH TOTALS ================= */
-  const branchToday = useMemo(
-    () =>
-      reports
-        .filter(
-          r =>
-            r.branchId === activeBranch &&
-            isToday(r.createdAt)
-        )
-        .reduce((s, r) => s + Number(r.commission || 0), 0),
-    [reports, activeBranch]
-  );
+const tableData = branchSelectedReports;
 
-  const branchMonth = useMemo(
-    () =>
-      reports
-        .filter(
-          r =>
-            r.branchId === activeBranch &&
-            isThisMonth(r.createdAt)
-        )
-        .reduce((s, r) => s + Number(r.commission || 0), 0),
-    [reports, activeBranch]
-  );
-/* ================= BRANCH COUNTS ================= */
-const branchTodayCount = useMemo(
-  () =>
-    reports.filter(
-      r =>
-        r.branchId === activeBranch &&
-        isToday(r.createdAt)
-    ).length,
-  [reports, activeBranch]
-);
 
-const branchMonthCount = useMemo(
-  () =>
-    reports.filter(
-      r =>
-        r.branchId === activeBranch &&
-        isThisMonth(r.createdAt)
-    ).length,
-  [reports, activeBranch]
-);
 
-  /* ================= TABLE DATA ================= */
-  const tableData = useMemo(() => {
-  if (!activeBranch) return [];
-  return reports.filter(
-    r =>
-      r.branchId === activeBranch &&
-      isExactDate(r.createdAt)
-  );
-}, [reports, activeBranch, exactDate]);
-
+/* ================= PAGINATION ================= */
 const totalPages = Math.ceil(tableData.length / PAGE_SIZE);
 
 const paginatedData = useMemo(() => {
   const start = (page - 1) * PAGE_SIZE;
   return tableData.slice(start, start + PAGE_SIZE);
 }, [tableData, page]);
+
+
 
 
   /* ================= THEME ================= */
@@ -320,9 +338,7 @@ const paginatedData = useMemo(() => {
     </p>
   </div>
 </div>
-
-
-        {/* BRANCH SELECT */}
+ {/* BRANCH SELECT */}
         <div className="flex flex-wrap gap-2 mb-4">
           {BRANCHES.map(b => (
             <button
@@ -336,50 +352,57 @@ const paginatedData = useMemo(() => {
           ))}
         </div>
 
-        {/* BRANCH DASHBOARD */}
+      {/* BRANCH DASHBOARD */}
 {activeBranch && (
-  <div className="grid md:grid-cols-4 gap-4 mb-6">
+  <div className="grid md:grid-cols-3 gap-4 mb-6">
+
+    {/* SELECTED DATE / TODAY */}
     <div className={`p-5 rounded-2xl ${card} text-center`}>
       <p className="text-sm opacity-70">
-        {activeBranch} Today Commission
+        {exactDate
+          ? `${activeBranch} (${exactDate})`
+          : `${activeBranch} Today`}
       </p>
+
       <p className="text-2xl font-bold">
-        GHS {branchToday}
+        GHS {branchSelectedCommission}
       </p>
+
       <p className="text-xs opacity-60">
-        {branchTodayCount} transactions
+        {branchSelectedCount} transactions
       </p>
     </div>
 
+    {/* MONTHLY */}
     <div className={`p-5 rounded-2xl ${card} text-center`}>
       <p className="text-sm opacity-70">
-        {activeBranch} Today Count
+        {activeBranch} This Month
       </p>
-      <p className="text-2xl font-bold">
-        {branchTodayCount}
-      </p>
-    </div>
 
-    <div className={`p-5 rounded-2xl ${card} text-center`}>
-      <p className="text-sm opacity-70">
-        {activeBranch} Monthly Commission
-      </p>
       <p className="text-2xl font-bold">
-        GHS {branchMonth}
+        GHS {branchMonthCommission}
       </p>
+
       <p className="text-xs opacity-60">
         {branchMonthCount} transactions
       </p>
     </div>
 
+    {/* ALL TIME */}
     <div className={`p-5 rounded-2xl ${card} text-center`}>
       <p className="text-sm opacity-70">
-        {activeBranch} Monthly Count
+        {activeBranch} All Time
       </p>
+
       <p className="text-2xl font-bold">
-        {branchMonthCount}
+        GHS {branchAllCommission}
+      </p>
+
+      <p className="text-xs opacity-60">
+        {branchAllCount} transactions
       </p>
     </div>
+
   </div>
 )}
 
