@@ -24,11 +24,18 @@ import {
 } from "lucide-react";
 
 /* ================= COMMISSION ================= */
-// Commission = amount × 0.002 (live, any amount)
-const calcCommission = (amount) =>
-  Number(amount) > 0
-    ? Number((Number(amount) * 0.002).toFixed(2))
-    : 0;
+// Default rate = 0.002
+// MPOHOR rate = 0.001 (500 → 0.50)
+
+const calcCommission = (amount, branchId) => {
+  const num = Number(amount);
+  if (!num || num <= 0) return 0;
+
+  const rate = branchId === "MPOHOR" ? 0.001 : 0.002;
+
+  return Number((num * rate).toFixed(2));
+};
+
 
 export default function AgentDashboard() {
   const [user, setUser] = useState(null);
@@ -129,7 +136,8 @@ const input =
     if (!form.customerName || !form.amount || !user) return;
 
     const amount = Number(form.amount);
-    const commission = calcCommission(amount);
+    const commission = calcCommission(amount, user.branchId);
+
 
     try {
       setLoading(true);
@@ -330,7 +338,8 @@ const totalCommission = useMemo(
               <Coins size={16} />
               Commission:
               <b className="text-emerald-500">
-                GHS {calcCommission(form.amount)}
+                GHS {calcCommission(form.amount, user?.branchId)}
+
               </b>
             </div>
 
