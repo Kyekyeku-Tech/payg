@@ -17,6 +17,12 @@ export default function PrivateRoute({ children, allow }) {
         return;
       }
 
+      // Only fetch role if we need to check permissions
+      if (!allow || allow.length === 0) {
+        setChecking(false);
+        return;
+      }
+
       const snap = await getDoc(doc(db, "users", user.uid));
 
       if (snap.exists()) {
@@ -27,10 +33,10 @@ export default function PrivateRoute({ children, allow }) {
     };
 
     loadRole();
-  }, [user]);
+  }, [user, allow]);
 
   // 🔥 CRITICAL: WAIT — DO NOT REDIRECT YET
-  if (loading || checking) {
+  if (loading || (checking && allow && allow.length > 0)) {
     return (
       <div className="h-screen flex items-center justify-center">
         Restoring session…
@@ -43,8 +49,8 @@ export default function PrivateRoute({ children, allow }) {
     return <Navigate to="/login" replace />;
   }
 
-  // ❌ ROLE NOT ALLOWED
-  if (allow && !allow.includes(role)) {
+  // ❌ ROLE NOT ALLOWED (only check if allow prop is provided)
+  if (allow && allow.length > 0 && !allow.includes(role)) {
     return <Navigate to="/" replace />;
   }
 

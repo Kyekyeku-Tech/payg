@@ -20,6 +20,8 @@ import {
   User,
   Briefcase,
   Crown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 
 /* ================= BRANCHES ================= */
@@ -43,6 +45,7 @@ export default function Login() {
   const [name, setName] = useState(""); // ✅ ADDED
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState("agent");
   const [branchId, setBranchId] = useState("");
   const [isRegister, setIsRegister] = useState(false);
@@ -198,14 +201,23 @@ export default function Login() {
             required
           />
 
-          <input
-            className={input}
-            placeholder="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <div className="relative">
+            <input
+              className={input}
+              placeholder="Password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
 
           {/* ROLE SELECT */}
           {isRegister && (

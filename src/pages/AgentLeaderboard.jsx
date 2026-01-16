@@ -29,7 +29,7 @@ export default function AgentLeaderboard() {
   const [users, setUsers] = useState({});
   const [theme, setTheme] = useState("light");
 
-  const [filterType, setFilterType] = useState("all"); // all | today | month | date
+  const [filterType, setFilterType] = useState("month"); // all | today | month | week | date
   const [exactDate, setExactDate] = useState("");
 
   /* ================= LOAD DATA ================= */
@@ -67,12 +67,28 @@ export default function AgentLeaderboard() {
     );
   };
 
+  const isThisWeek = (ts) => {
+    const d = ts?.toDate();
+    if (!d) return false;
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6);
+    endOfWeek.setHours(23, 59, 59, 999);
+    return d >= startOfWeek && d <= endOfWeek;
+  };
+
   const isExactDate = (ts) => {
     if (!exactDate) return true;
-    return (
-      ts?.toDate()?.toDateString() ===
-      new Date(exactDate).toDateString()
-    );
+    const [year, month, day] = exactDate.split('-').map(Number);
+    const pickedDate = new Date(year, month - 1, day);
+    const reportDate = ts?.toDate();
+    if (!reportDate) return false;
+    const rYear = reportDate.getFullYear();
+    const rMonth = reportDate.getMonth();
+    const rDay = reportDate.getDate();
+    return rYear === year && rMonth === month - 1 && rDay === day;
   };
 
   /* ================= LEADERBOARD ================= */
@@ -83,6 +99,7 @@ export default function AgentLeaderboard() {
       if (
         (filterType === "today" && !isToday(r.createdAt)) ||
         (filterType === "month" && !isThisMonth(r.createdAt)) ||
+        (filterType === "week" && !isThisWeek(r.createdAt)) ||
         (filterType === "date" && !isExactDate(r.createdAt))
       ) {
         return;
@@ -211,8 +228,9 @@ export default function AgentLeaderboard() {
       }`}
   >
     <option value="all">All Time</option>
-    <option value="today">Today</option>
     <option value="month">This Month</option>
+    <option value="week">This Week</option>
+    <option value="today">Today</option>
     <option value="date">Exact Date</option>
   </select>
 
