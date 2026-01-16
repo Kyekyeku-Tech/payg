@@ -91,10 +91,14 @@ export default function GMDashboard() {
 
   const isExactDate = (ts) => {
     if (!exactDate) return true;
-    return (
-      ts?.toDate()?.toDateString() ===
-      new Date(exactDate).toDateString()
-    );
+    const [year, month, day] = exactDate.split('-').map(Number);
+    const pickedDate = new Date(year, month - 1, day);
+    const reportDate = ts?.toDate();
+    if (!reportDate) return false;
+    const rYear = reportDate.getFullYear();
+    const rMonth = reportDate.getMonth();
+    const rDay = reportDate.getDate();
+    return rYear === year && rMonth === month - 1 && rDay === day;
   };
   const exportToCSV = () => {
   if (!tableData.length) {
@@ -141,17 +145,27 @@ const branchBaseReports = useMemo(() => {
 const branchSelectedReports = useMemo(() => {
   if (!activeBranch) return [];
 
+  let filtered;
   // If exactDate is chosen → use it
   if (exactDate) {
-    return branchBaseReports.filter(r =>
+    filtered = branchBaseReports.filter(r =>
       isExactDate(r.createdAt)
+    );
+  } else {
+    // Otherwise default to TODAY
+    filtered = branchBaseReports.filter(r =>
+      isToday(r.createdAt)
     );
   }
 
-  // Otherwise default to TODAY
-  return branchBaseReports.filter(r =>
-    isToday(r.createdAt)
-  );
+  // Sort by createdAt descending (most recent first)
+  filtered.sort((a, b) => {
+    const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+    const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+    return dateB - dateA;
+  });
+
+  return filtered;
 }, [branchBaseReports, exactDate]);
 
 const branchSelectedCommission = useMemo(
@@ -272,7 +286,7 @@ const paginatedData = useMemo(() => {
             </p>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={() => setTheme(t => (t === "light" ? "dark" : "light"))}
               className={`px-3 py-2 rounded-xl ${btn}`}
@@ -408,7 +422,7 @@ const paginatedData = useMemo(() => {
 
        {/* EXACT DATE FILTER + EXPORT */}
 {activeBranch && (
-  <div className="flex items-center justify-between mb-3">
+  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-3">
     
     {/* DATE FILTER */}
     <div className="flex items-center gap-2">
@@ -417,7 +431,7 @@ const paginatedData = useMemo(() => {
   type="date"
   value={exactDate}
   onChange={(e) => setExactDate(e.target.value)}
-  className={`mb-6 p-2 rounded-lg border
+  className={`p-2 rounded-lg border
     ${
       theme === "dark"
         ? "bg-black/40 text-white border-white/40 [color-scheme:dark]"
@@ -433,7 +447,7 @@ const paginatedData = useMemo(() => {
     {/* EXPORT BUTTON */}
    <button
   onClick={exportToCSV}
-  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
+  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium w-full sm:w-auto"
 >
   Export
 </button>

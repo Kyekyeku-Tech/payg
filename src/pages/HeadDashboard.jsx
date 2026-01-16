@@ -81,26 +81,38 @@ export default function HeadDashboard() {
 
   /* ================= DATE FILTER ================= */
   const filteredReports = useMemo(() => {
-  return reports.filter((r) => {
-    // date filter
-    if (selectedDate) {
-      const picked = new Date(selectedDate).toDateString();
-      if (
-        !r.createdAt?.toDate ||
-        r.createdAt.toDate().toDateString() !== picked
-      ) {
+    let filtered = reports.filter((r) => {
+      // date filter
+      if (selectedDate) {
+        const [year, month, day] = selectedDate.split('-').map(Number);
+        const pickedDate = new Date(year, month - 1, day);
+        const reportDate = r.createdAt?.toDate();
+        if (!reportDate) return false;
+        const rYear = reportDate.getFullYear();
+        const rMonth = reportDate.getMonth();
+        const rDay = reportDate.getDate();
+        if (rYear !== year || rMonth !== month - 1 || rDay !== day) {
+          return false;
+        }
+      }
+
+      // agent filter
+      if (selectedAgent && r.agentId !== selectedAgent) {
         return false;
       }
-    }
 
-    // agent filter
-    if (selectedAgent && r.agentId !== selectedAgent) {
-      return false;
-    }
+      return true;
+    });
 
-    return true;
-  });
-}, [reports, selectedDate, selectedAgent]);
+    // Sort by createdAt descending (most recent first)
+    filtered.sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+      return dateB - dateA;
+    });
+
+    return filtered;
+  }, [reports, selectedDate, selectedAgent]);
 
 
   /* ================= RESET PAGE ================= */
