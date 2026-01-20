@@ -23,6 +23,7 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { Users } from "lucide-react";
 
 /* ================= COMMISSION ================= */
 // Default rate = 0.002
@@ -42,8 +43,7 @@ export default function AgentDashboard() {
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState("light"); 
-  const [success, setSuccess] = useState(false);
+  const [theme, setTheme] = useState("light");
   const navigate = useNavigate();
 
 // 🌞 default
@@ -165,8 +165,6 @@ const commission = calcCommission(amount, user.branchId);
 
 setForm({ customerName: "", amount: "" });
 
-setSuccess(true);
-setTimeout(() => setSuccess(false), 3000);
 
     } catch (err) {
       console.error(err);
@@ -233,6 +231,13 @@ const totalCommission = useMemo(
               Welcome back, {user?.name || "Agent"}
             </p>
           </div>
+              <button
+            onClick={() => navigate("/head/submit")}
+            className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium flex items-center gap-1"
+          >
+            <Users size={14} />
+            ECW REport
+          </button>
 
           <div className="flex items-center gap-2">
             {/* THEME TOGGLE */}

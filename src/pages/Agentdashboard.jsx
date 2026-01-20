@@ -22,6 +22,9 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Users } from "lucide-react";
+
 
 /* ================= COMMISSION ================= */
 // Default rate = 0.002
@@ -38,6 +41,7 @@ const calcCommission = (amount, branchId) => {
 
 
 export default function AgentDashboard() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -231,6 +235,13 @@ const totalCommission = useMemo(
               Welcome back, {user?.name || "Agent"}
             </p>
           </div>
+                   <button
+            onClick={() => navigate("/Agent/ecw")}
+            className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium flex items-center gap-1"
+          >
+            <Users size={14} />
+            ECW REport
+          </button>
 
           <div className="flex items-center gap-2">
             {/* THEME TOGGLE */}

@@ -85,7 +85,6 @@ export default function HeadDashboard() {
       // date filter
       if (selectedDate) {
         const [year, month, day] = selectedDate.split('-').map(Number);
-        const pickedDate = new Date(year, month - 1, day);
         const reportDate = r.createdAt?.toDate();
         if (!reportDate) return false;
         const rYear = reportDate.getFullYear();
@@ -239,32 +238,69 @@ const agentTotals = useMemo(() => {
     <div className={`min-h-screen ${pageStyle}`}>
       <div className="p-4 max-w-7xl mx-auto">
         {/* HEADER */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-3xl font-bold">Branch Head</h2>
-            <p className="text-gray-500">
-              Branch: <b>{user.branchId}</b>
-            </p>
-          </div>
+<div className="
+  flex flex-col gap-4 mb-6
+  sm:flex-row sm:items-center
+">
+  {/* LEFT SIDE */}
+  <div>
+    <h2 className="text-3xl font-bold">Branch Head</h2>
+    <p className="text-gray-500">
+      Branch: <b>{user.branchId}</b>
+    </p>
+  </div>
 
-          <div className="flex gap-2">
-            <button
-              onClick={() =>
-                setTheme(theme === "dark" ? "light" : "dark")
-              }
-              className="p-2 rounded-full border"
-            >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <button
-  onClick={() => navigate("/head/report")}
-  className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-sm font-medium"
->
-  Report
-</button>
-            <LogoutButton />
-          </div>
-        </div>
+  {/* RIGHT SIDE BUTTONS */}
+  <div
+    className="
+      flex flex-col gap-2
+      sm:flex-row sm:gap-2
+      sm:ml-auto sm:justify-end
+    "
+  >
+    {/* THEME */}
+    <button
+      onClick={() =>
+        setTheme(theme === "dark" ? "light" : "dark")
+      }
+      className="p-2 rounded-full border self-start sm:self-auto"
+    >
+      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+
+    {/* PAYG */}
+    <button
+      onClick={() => navigate("/head/report")}
+      className="
+        w-full sm:w-auto
+        px-3 py-2 rounded-lg
+        bg-yellow-500 hover:bg-yellow-400
+        text-black text-sm font-medium
+      "
+    >
+      PAYG Report
+    </button>
+
+    {/* ECW */}
+    <button
+      onClick={() => navigate("/head/ecw")}
+      className="
+        w-full sm:w-auto
+        px-3 py-2 rounded-lg
+        bg-blue-500 hover:bg-blue-400
+        text-black text-sm font-medium
+      "
+    >
+      ECW Dashboard
+    </button>
+
+    {/* LOGOUT */}
+    <div className="self-start sm:self-auto">
+      <LogoutButton />
+    </div>
+  </div>
+</div>
+
 
         <input
   type="date"

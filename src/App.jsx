@@ -9,35 +9,30 @@ import Login from "./pages/Login";
 import AgentDashboard from "./pages/Agentdashboard";
 import HeadDashboard from "./pages/HeadDashboard";
 import GMDashboard from "./pages/GMDashboard";
+import AgentEcw from "./pages/AgentEcw";
+import HeadECW from "./pages/HeadECW";
+import GMEcw from "./pages/GMEcw";
 import AdminApproval from "./pages/AdminApproval";
 import PrivateRoute from "./components/PrivateRoute";
 import AgentLeaderboard from "./pages/AgentLeaderboard";
+import Ecwleader from "./pages/Ecwleader";
 import BranchReport from "./pages/BranchReport";
+import HeadSubmit from "./pages/HeadSubmit";
 
-// Smart root component that handles initial redirect
+/* ================= ROOT REDIRECT ================= */
 function RootRedirect() {
   const [user, loading] = useAuthState(auth);
   const [role, setRole] = useState(null);
-  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const loadRole = async () => {
-      if (!user) {
-        setChecking(false);
-        return;
-      }
+    if (!user) return;
 
-      const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists()) {
-        setRole(snap.data().role);
-      }
-      setChecking(false);
-    };
-
-    loadRole();
+    getDoc(doc(db, "users", user.uid)).then((snap) => {
+      if (snap.exists()) setRole(snap.data().role);
+    });
   }, [user]);
 
-  if (loading || checking) {
+  if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
         Loading...
@@ -45,17 +40,13 @@ function RootRedirect() {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
-  // If authenticated, redirect to appropriate dashboard or lastRoute
   const lastRoute = localStorage.getItem("lastRoute");
   if (lastRoute && lastRoute !== "/login") {
     return <Navigate to={lastRoute} replace />;
   }
 
-  // Default to role-based dashboard
   if (role === "agent") return <Navigate to="/agent/dashboard" replace />;
   if (role === "branch_head") return <Navigate to="/head/dashboard" replace />;
   if (role === "gm") return <Navigate to="/gm/dashboard" replace />;
@@ -63,29 +54,20 @@ function RootRedirect() {
   return <Navigate to="/login" replace />;
 }
 
+/* ================= APP ================= */
 export default function App() {
   return (
     <BrowserRouter>
       <RouteTracker />
 
       <Routes>
-        {/* ROOT - Smart redirect */}
+        {/* ROOT */}
         <Route path="/" element={<RootRedirect />} />
-
-        <Route
-  path="/gm/leaderboard"
-  element={<AgentLeaderboard />}
-/>
-<Route
-  path="/head/report"
-  element={<BranchReport />}
-/>
-
 
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
 
-        {/* AGENT */}
+        {/* ================= AGENT ================= */}
         <Route
           path="/agent/dashboard"
           element={
@@ -94,8 +76,24 @@ export default function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/agent/ecw"
+          element={
+            <PrivateRoute allow={["agent"]}>
+              <AgentEcw />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/agent/leaderboard"
+          element={
+            <PrivateRoute allow={["branch_head"]}>
+              <AgentLeaderboard />
+            </PrivateRoute>
+          }
+        />
 
-        {/* BRANCH HEAD */}
+        {/* ================= BRANCH HEAD ================= */}
         <Route
           path="/head/dashboard"
           element={
@@ -104,8 +102,32 @@ export default function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/head/ecw"
+          element={
+            <PrivateRoute allow={["branch_head"]}>
+              <HeadECW />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/head/report"
+          element={
+            <PrivateRoute allow={["branch_head"]}>
+              <BranchReport />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/head/submit"
+          element={
+            <PrivateRoute allow={["branch_head"]}>
+              <HeadSubmit />
+            </PrivateRoute>
+          }
+        />
 
-        {/* GM DASHBOARD */}
+        {/* ================= GM ================= */}
         <Route
           path="/gm/dashboard"
           element={
@@ -114,8 +136,30 @@ export default function App() {
             </PrivateRoute>
           }
         />
-
-        {/* ADMIN / GM APPROVAL */}
+        <Route
+          path="/gm/ecw"
+          element={
+            <PrivateRoute allow={["gm"]}>
+              <GMEcw />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/gm/leaderboard"
+          element={
+            <PrivateRoute allow={["gm"]}>
+              <AgentLeaderboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/gm/ecwleaderboard"
+          element={
+            <PrivateRoute allow={["gm"]}>
+              <Ecwleader />
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/admin/approvals"
           element={
@@ -126,10 +170,7 @@ export default function App() {
         />
 
         {/* FALLBACK */}
-        <Route
-          path="*"
-          element={<Navigate to="/login" replace />}
-        />
+        <Route path="*" element={<RootRedirect />} />
       </Routes>
     </BrowserRouter>
   );

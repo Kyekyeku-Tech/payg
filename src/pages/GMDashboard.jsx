@@ -4,12 +4,10 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  Timestamp,
 } from "firebase/firestore";
 import { db } from "../firebase";
 import LogoutButton from "../components/LogoutButton";
 import {
-  CheckCircle,
   Loader2,
   Users,
   Sun,
@@ -17,12 +15,15 @@ import {
   CalendarDays,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCallback } from "react";
 
 /* ================= BRANCH LIST ================= */
 const BRANCHES = [
   "AGONA","BAKAEKYIR","ELUBO","AXIM","ESIAMA",
   "VOL-MAGT","TYPE-C","KOJOKROM","ANAJI-K","MPOHOR",
 ];
+const formatGhs = (value) =>
+  Number(value || 0).toFixed(2);
 
 export default function GMDashboard() {
   const navigate = useNavigate();
@@ -32,6 +33,10 @@ export default function GMDashboard() {
   const [activeBranch, setActiveBranch] = useState(null);
   const [loadingId, setLoadingId] = useState(null);
   const [theme, setTheme] = useState("light");
+  const [useRange, setUseRange] = useState(false);
+const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
+
 
   // table filter only
   const [exactDate, setExactDate] = useState("");
@@ -49,9 +54,10 @@ export default function GMDashboard() {
     load();
   }, []);
     /* ================= RESET PAGE ON FILTER CHANGE ================= */
-  useEffect(() => {
-    setPage(1);
-  }, [activeBranch, exactDate]);
+useEffect(() => {
+  setPage(1);
+}, [activeBranch, exactDate, fromDate, toDate, useRange]);
+
 
 
   const deleteReport = async (id) => {
@@ -77,29 +83,47 @@ export default function GMDashboard() {
   /* ================= DATE HELPERS ================= */
   const today = new Date();
 
-  const isToday = (ts) =>
-    ts?.toDate()?.toDateString() === today.toDateString();
+  
 
-  const isThisMonth = (ts) => {
-    const d = ts?.toDate();
-    return (
-      d &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    );
-  };
+const isToday = useCallback((ts) => {
+  return ts?.toDate()?.toDateString() === new Date().toDateString();
+}, []);
 
-  const isExactDate = (ts) => {
-    if (!exactDate) return true;
-    const [year, month, day] = exactDate.split('-').map(Number);
-    const pickedDate = new Date(year, month - 1, day);
-    const reportDate = ts?.toDate();
-    if (!reportDate) return false;
-    const rYear = reportDate.getFullYear();
-    const rMonth = reportDate.getMonth();
-    const rDay = reportDate.getDate();
-    return rYear === year && rMonth === month - 1 && rDay === day;
-  };
+const isThisMonth = useCallback((ts) => {
+  const d = ts?.toDate();
+  const now = new Date();
+  return (
+    d &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear()
+  );
+}, []);
+
+const isExactDate = useCallback((ts) => {
+  if (!exactDate) return true;
+  const [y, m, d] = exactDate.split("-").map(Number);
+  const r = ts?.toDate();
+  return r &&
+    r.getFullYear() === y &&
+    r.getMonth() === m - 1 &&
+    r.getDate() === d;
+}, [exactDate]);
+
+const isInRange = useCallback((ts) => {
+  if (!fromDate || !toDate) return true;
+  const d = ts?.toDate();
+  if (!d) return false;
+
+  const start = new Date(fromDate);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(toDate);
+  end.setHours(23, 59, 59, 999);
+
+  return d >= start && d <= end;
+}, [fromDate, toDate]);
+
+  /* ================= EXPORT CSV ================= */
   const exportToCSV = () => {
   if (!tableData.length) {
     alert("No data to export");
@@ -117,7 +141,7 @@ export default function GMDashboard() {
   const rows = tableData.map(r => [
     r.customerName,
     r.amount,
-    r.commission,
+    formatGhs(r.commission),
     r.branchId,
     r.createdAt?.toDate()?.toLocaleDateString(),
   ]);
@@ -141,32 +165,32 @@ const branchBaseReports = useMemo(() => {
   return reports.filter(r => r.branchId === activeBranch);
 }, [reports, activeBranch]);
 
-/* ================= SELECTED DATE / TODAY ================= */
 const branchSelectedReports = useMemo(() => {
   if (!activeBranch) return [];
 
   let filtered;
-  // If exactDate is chosen → use it
-  if (exactDate) {
-    filtered = branchBaseReports.filter(r =>
-      isExactDate(r.createdAt)
-    );
+
+  if (useRange) {
+    filtered = branchBaseReports.filter(r => isInRange(r.createdAt));
+  } else if (exactDate) {
+    filtered = branchBaseReports.filter(r => isExactDate(r.createdAt));
   } else {
-    // Otherwise default to TODAY
-    filtered = branchBaseReports.filter(r =>
-      isToday(r.createdAt)
-    );
+    filtered = branchBaseReports.filter(r => isToday(r.createdAt));
   }
 
-  // Sort by createdAt descending (most recent first)
-  filtered.sort((a, b) => {
-    const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
-    const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
-    return dateB - dateA;
-  });
+  return filtered.sort((a, b) =>
+    b.createdAt?.toDate?.() - a.createdAt?.toDate?.()
+  );
+}, [
+  branchBaseReports,
+  activeBranch,
+  exactDate,
+  useRange,
+  isToday,
+  isExactDate,
+  isInRange
+]);
 
-  return filtered;
-}, [branchBaseReports, exactDate]);
 
 const branchSelectedCommission = useMemo(
   () =>
@@ -280,7 +304,7 @@ const paginatedData = useMemo(() => {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-3xl font-bold">Management</h2>
+            <h2 className="text-3xl font-bold">PAYG Management</h2>
             <p className="opacity-70 text-sm">
               Daily & Monthly Tracker
             </p>
@@ -305,7 +329,13 @@ const paginatedData = useMemo(() => {
   onClick={() => navigate("/gm/leaderboard")}
   className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-sm font-medium"
 >
-  Leaderboard
+  PAYG Leaderboard
+</button>
+<button
+  onClick={() => navigate("/gm/ecw")}
+  className="px-3 py-1.5 rounded-lg bg-yellow-500 hover:bg-yellow-400 text-black text-sm font-medium"
+>
+  ECW Report
 </button>
 
 
@@ -314,11 +344,13 @@ const paginatedData = useMemo(() => {
           </div>
         </div>
 
-        {/* GLOBAL DASHBOARD */}
+       {/* ================= GLOBAL DASHBOARD ================= */}
 <div className="grid md:grid-cols-4 gap-4 mb-6">
   <div className={`p-5 rounded-2xl ${card} text-center`}>
     <p className="text-sm opacity-70">Today Commission</p>
-    <p className="text-2xl font-bold">GHS {totalToday}</p>
+    <p className="text-2xl font-bold">
+      GHS {formatGhs(totalToday)}
+    </p>
     <p className="text-xs opacity-60">
       {todayCount} transactions
     </p>
@@ -326,17 +358,15 @@ const paginatedData = useMemo(() => {
 
   <div className={`p-5 rounded-2xl ${card} text-center`}>
     <p className="text-sm opacity-70">Today Count</p>
-    <p className="text-2xl font-bold">
-      {todayCount}
-    </p>
-    <p className="text-xs opacity-60">
-      transactions
-    </p>
+    <p className="text-2xl font-bold">{todayCount}</p>
+    <p className="text-xs opacity-60">transactions</p>
   </div>
 
   <div className={`p-5 rounded-2xl ${card} text-center`}>
     <p className="text-sm opacity-70">Monthly Commission</p>
-    <p className="text-2xl font-bold">GHS {totalMonth}</p>
+    <p className="text-2xl font-bold">
+      GHS {formatGhs(totalMonth)}
+    </p>
     <p className="text-xs opacity-60">
       {monthCount} transactions
     </p>
@@ -344,42 +374,102 @@ const paginatedData = useMemo(() => {
 
   <div className={`p-5 rounded-2xl ${card} text-center`}>
     <p className="text-sm opacity-70">Monthly Count</p>
-    <p className="text-2xl font-bold">
-      {monthCount}
-    </p>
-    <p className="text-xs opacity-60">
-      transactions
-    </p>
+    <p className="text-2xl font-bold">{monthCount}</p>
+    <p className="text-xs opacity-60">transactions</p>
   </div>
 </div>
- {/* BRANCH SELECT */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {BRANCHES.map(b => (
-            <button
-              key={b}
-              onClick={() => setActiveBranch(b)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold
-                ${activeBranch === b ? "bg-sky-600 text-white" : btn}`}
-            >
-              {b}
-            </button>
-          ))}
-        </div>
 
-      {/* BRANCH DASHBOARD */}
+{/* ================= BRANCH SELECT ================= */}
+<div className="flex flex-wrap gap-2 mb-4">
+  {BRANCHES.map((b) => (
+    <button
+      key={b}
+      onClick={() => setActiveBranch(b)}
+      className={`px-4 py-2 rounded-full text-sm font-semibold
+        ${activeBranch === b ? "bg-sky-600 text-white" : btn}`}
+    >
+      {b}
+    </button>
+  ))}
+</div>
+
+{/* ================= DATE FILTERS ================= */}
+{activeBranch && (
+  <div className="flex flex-col gap-3 mb-5">
+
+    {/* RANGE TOGGLE */}
+    <label className="flex items-center gap-2 text-sm font-medium">
+      <input
+        type="checkbox"
+        checked={useRange}
+        onChange={(e) => {
+          setUseRange(e.target.checked);
+          setExactDate("");
+        }}
+      />
+      Use Date Range
+    </label>
+
+    {/* RANGE PICKER */}
+    {useRange ? (
+      <div className="flex flex-wrap items-center gap-3">
+        <input
+          type="date"
+          value={fromDate}
+          onChange={(e) => setFromDate(e.target.value)}
+          className={`p-2 rounded-lg border
+            ${theme === "dark"
+              ? "bg-black/40 text-white border-white/40 [color-scheme:dark]"
+              : "bg-white text-black border-black/30"}`}
+        />
+
+        <span className="text-sm opacity-70">to</span>
+
+        <input
+          type="date"
+          value={toDate}
+          onChange={(e) => setToDate(e.target.value)}
+          className={`p-2 rounded-lg border
+            ${theme === "dark"
+              ? "bg-black/40 text-white border-white/40 [color-scheme:dark]"
+              : "bg-white text-black border-black/30"}`}
+        />
+      </div>
+    ) : (
+      <div className="flex items-center gap-2">
+        <CalendarDays size={16} />
+        <input
+          type="date"
+          value={exactDate}
+          onChange={(e) => setExactDate(e.target.value)}
+          className={`p-2 rounded-lg border
+            ${theme === "dark"
+              ? "bg-black/40 text-white border-white/40 [color-scheme:dark]"
+              : "bg-white text-black border-black/30"}`}
+        />
+        <span className="text-sm opacity-70">
+          Filter exact date
+        </span>
+      </div>
+    )}
+  </div>
+)}
+
+{/* ================= BRANCH DASHBOARD ================= */}
 {activeBranch && (
   <div className="grid md:grid-cols-3 gap-4 mb-6">
 
-    {/* SELECTED DATE / TODAY */}
     <div className={`p-5 rounded-2xl ${card} text-center`}>
       <p className="text-sm opacity-70">
-        {exactDate
+        {useRange && fromDate && toDate
+          ? `${activeBranch} (${fromDate} → ${toDate})`
+          : exactDate
           ? `${activeBranch} (${exactDate})`
           : `${activeBranch} Today`}
       </p>
 
       <p className="text-2xl font-bold">
-        GHS {branchSelectedCommission}
+        GHS {formatGhs(branchSelectedCommission)}
       </p>
 
       <p className="text-xs opacity-60">
@@ -387,14 +477,13 @@ const paginatedData = useMemo(() => {
       </p>
     </div>
 
-    {/* MONTHLY */}
     <div className={`p-5 rounded-2xl ${card} text-center`}>
       <p className="text-sm opacity-70">
         {activeBranch} This Month
       </p>
 
       <p className="text-2xl font-bold">
-        GHS {branchMonthCommission}
+        GHS {formatGhs(branchMonthCommission)}
       </p>
 
       <p className="text-xs opacity-60">
@@ -402,14 +491,13 @@ const paginatedData = useMemo(() => {
       </p>
     </div>
 
-    {/* ALL TIME */}
     <div className={`p-5 rounded-2xl ${card} text-center`}>
       <p className="text-sm opacity-70">
         {activeBranch} All Time
       </p>
 
       <p className="text-2xl font-bold">
-        GHS {branchAllCommission}
+        GHS {formatGhs(branchAllCommission)}
       </p>
 
       <p className="text-xs opacity-60">
@@ -420,41 +508,24 @@ const paginatedData = useMemo(() => {
   </div>
 )}
 
-       {/* EXACT DATE FILTER + EXPORT */}
-{activeBranch && (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0 mb-3">
-    
-    {/* DATE FILTER */}
-    <div className="flex items-center gap-2">
-      <CalendarDays size={16} />
-<input
-  type="date"
-  value={exactDate}
-  onChange={(e) => setExactDate(e.target.value)}
-  className={`p-2 rounded-lg border
-    ${
-      theme === "dark"
-        ? "bg-black/40 text-white border-white/40 [color-scheme:dark]"
-        : "bg-white text-black border-black/30 [color-scheme:light]"
-    }`}
-/>
-
-      <span className="text-sm opacity-70">
-        Filter exact date
-      </span>
-    </div>
-
-    {/* EXPORT BUTTON */}
-   <button
-  onClick={exportToCSV}
-  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium w-full sm:w-auto"
->
-  Export
-</button>
-
-
+{/* ================= REPORT TABLE ================= */}
+<div className="mb-20">
+  <div className="flex justify-between items-center mb-4">
+    <h3 className="text-xl font-bold">
+      {activeBranch
+        ? `Transactions for ${activeBranch}`
+        : "Select a branch to view transactions"}
+    </h3>
+    {activeBranch && (
+      <button
+        onClick={exportToCSV}
+        className={`px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white ${btn}`}
+      >
+        Export CSV
+      </button>
+    )}
   </div>
-)}
+</div>
 
 
        {/* TABLE */}
@@ -484,7 +555,7 @@ const paginatedData = useMemo(() => {
               </td>
 
               <td className="p-3 font-bold">
-                GHS {r.commission}
+                GHS {formatGhs(r.commission)}
               </td>
 
               <td className="p-3">
