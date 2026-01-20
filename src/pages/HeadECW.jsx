@@ -336,6 +336,32 @@ map[r.agentId].count += 1;
             <p className="text-2xl font-bold">GHS {totalFiltered}</p>
           </div>
         </div>
+        {/* AGENT PERFORMANCE */}
+{Object.keys(agentTotals).length > 0 && (
+  <div className="mb-6">
+    <h3 className="font-bold mb-3">Agent Performance</h3>
+
+    <div className="grid md:grid-cols-3 gap-4">
+      {Object.entries(agentTotals).map(([agentId, data]) => (
+        <div
+          key={agentId}
+          className={`p-4 rounded-xl ${card}`}
+        >
+          <p className="font-semibold">
+            {agents[agentId] || "Unknown Agent"}
+          </p>
+          <p className="text-sm opacity-70">
+            Transactions: {data.count}
+          </p>
+          <p className="text-lg font-bold">
+            GHS {data.served.toFixed(2)}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
 
         {/* EXPORT */}
         <div className="flex justify-between mb-3">

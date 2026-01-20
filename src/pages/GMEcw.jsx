@@ -29,7 +29,19 @@ const BRANCHES = [
 
 const PAGE_SIZE = 10;
 
-export default function GMDashboard() {
+function StatCard({ title, value, suffix = "GHS" }) {
+  return (
+    <div className="p-5 rounded-2xl bg-white/5 border border-white/40 text-center">
+      <p className="text-sm opacity-70">{title}</p>
+      <p className="text-2xl font-bold">
+        {suffix} {Number(value).toFixed(2)}
+      </p>
+    </div>
+  );
+}
+
+
+export default function GMEcw() {
   const navigate = useNavigate();
 
   /* ================= STATE ================= */
@@ -363,6 +375,29 @@ const branchMonthServed = useMemo(
             </button>
           ))}
         </div>
+
+        {/* BRANCH TOTAL STATS */}
+{activeBranch && (
+  <div className="grid md:grid-cols-4 gap-4 mb-6">
+    <StatCard
+      title={`${activeBranch} • Today Request`}
+      value={branchRequestToday}
+    />
+    <StatCard
+      title={`${activeBranch} • Today Served`}
+      value={branchServedToday}
+    />
+    <StatCard
+      title={`${activeBranch} • Month Request`}
+      value={branchMonthRequest}
+    />
+    <StatCard
+      title={`${activeBranch} • Month Served`}
+      value={branchMonthServed}
+    />
+  </div>
+)}
+
 
         {/* DATE + EXPORT */}
         {activeBranch && (
