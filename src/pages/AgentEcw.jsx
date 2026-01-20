@@ -165,20 +165,21 @@ export default function AgentECW() {
   /* ================= TODAY HELPERS ================= */
   const todayStr = new Date().toDateString();
 
-  const isToday = (ts) => {
-    if (!ts) return false;
-    const date =
-      ts instanceof Date
-        ? ts
-        : ts.toDate
-        ? ts.toDate()
-        : null;
-    return date ? date.toDateString() === todayStr : false;
-  };
+  const isToday = React.useCallback((ts) => {
+  if (!ts) return false;
+  const date =
+    ts instanceof Date
+      ? ts
+      : ts.toDate
+      ? ts.toDate()
+      : null;
+  return date ? date.toDateString() === todayStr : false;
+}, [todayStr]);
+
 
   const todayReports = useMemo(
     () => reports.filter((r) => isToday(r.createdAt)),
-    [reports]
+    [reports, isToday]
   );
 
   const totalAmount = useMemo(

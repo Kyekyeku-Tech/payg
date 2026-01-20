@@ -174,10 +174,10 @@ setForm({ customerName: "", amount: "" });
     }
   };
 
-  /* ================= TODAY HELPERS ================= */
+ /* ================= TODAY HELPERS ================= */
 const todayStr = new Date().toDateString();
 
-const isToday = (ts) => {
+const isToday = React.useCallback((ts) => {
   if (!ts) return false;
 
   const date =
@@ -190,10 +190,11 @@ const isToday = (ts) => {
   return date
     ? date.toDateString() === todayStr
     : false;
-};
+}, [todayStr]);
+
 const todayReports = useMemo(
   () => reports.filter((r) => isToday(r.createdAt)),
-  [reports]
+  [reports, isToday]
 );
 
   /* ================= TOTALS (TODAY ONLY) ================= */

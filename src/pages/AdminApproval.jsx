@@ -13,8 +13,6 @@ import { motion } from "framer-motion";
 import {
   ShieldAlert,
   Loader2,
-  CheckCircle,
-  UserCog,
   Search,
   Sun,
   Moon,

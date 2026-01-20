@@ -46,7 +46,6 @@ export default function AgentDashboard() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState("light"); 
-  const [success, setSuccess] = useState(false);
 
 // 🌞 default
 
@@ -167,9 +166,6 @@ const input =
 
 setForm({ customerName: "", amount: "" });
 
-setSuccess(true);
-setTimeout(() => setSuccess(false), 3000);
-
     } catch (err) {
       console.error(err);
       alert("Submission failed");
@@ -181,7 +177,7 @@ setTimeout(() => setSuccess(false), 3000);
   /* ================= TODAY HELPERS ================= */
 const todayStr = new Date().toDateString();
 
-const isToday = (ts) => {
+const isToday = React.useCallback((ts) => {
   if (!ts) return false;
 
   const date =
@@ -194,11 +190,13 @@ const isToday = (ts) => {
   return date
     ? date.toDateString() === todayStr
     : false;
-};
+}, [todayStr]);
+
 const todayReports = useMemo(
   () => reports.filter((r) => isToday(r.createdAt)),
-  [reports]
+  [reports, isToday]
 );
+
 
   /* ================= TOTALS (TODAY ONLY) ================= */
 const totalAmount = useMemo(

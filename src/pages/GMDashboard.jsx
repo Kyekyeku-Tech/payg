@@ -81,13 +81,9 @@ useEffect(() => {
 
 
   /* ================= DATE HELPERS ================= */
-  const today = new Date();
-
-  
-
-const isToday = useCallback((ts) => {
-  return ts?.toDate()?.toDateString() === new Date().toDateString();
-}, []);
+  const isToday = useCallback((ts) => {
+    return ts?.toDate()?.toDateString() === new Date().toDateString();
+  }, []);
 
 const isThisMonth = useCallback((ts) => {
   const d = ts?.toDate();
@@ -209,7 +205,7 @@ const branchMonthReports = useMemo(
     branchBaseReports.filter(r =>
       isThisMonth(r.createdAt)
     ),
-  [branchBaseReports]
+  [branchBaseReports, isThisMonth]
 );
 
 const branchMonthCommission = useMemo(
@@ -238,32 +234,33 @@ const branchAllCount = branchBaseReports.length;
 
 
   /* ================= GLOBAL TOTALS ================= */
-  const totalToday = useMemo(
-    () =>
-      reports
-        .filter(r => isToday(r.createdAt))
-        .reduce((s, r) => s + Number(r.commission || 0), 0),
-    [reports]
-  );
+ const totalToday = useMemo(
+  () =>
+    reports
+      .filter(r => isToday(r.createdAt))
+      .reduce((s, r) => s + Number(r.commission || 0), 0),
+  [reports, isToday]
+);
 
-  const totalMonth = useMemo(
-    () =>
-      reports
-        .filter(r => isThisMonth(r.createdAt))
-        .reduce((s, r) => s + Number(r.commission || 0), 0),
-    [reports]
-  );
+const totalMonth = useMemo(
+  () =>
+    reports
+      .filter(r => isThisMonth(r.createdAt))
+      .reduce((s, r) => s + Number(r.commission || 0), 0),
+  [reports, isThisMonth]
+);
+
 /* ================= GLOBAL COUNTS ================= */
 const todayCount = useMemo(
   () =>
     reports.filter(r => isToday(r.createdAt)).length,
-  [reports]
+  [reports, isToday]
 );
 
 const monthCount = useMemo(
   () =>
     reports.filter(r => isThisMonth(r.createdAt)).length,
-  [reports]
+  [reports, isThisMonth]
 );
 
 const tableData = branchSelectedReports;
