@@ -5,34 +5,49 @@ import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import RouteTracker from "./components/RouteTracker";
 
+/* ================= PAGES ================= */
 import Login from "./pages/Login";
 import AgentDashboard from "./pages/Agentdashboard";
 import HeadDashboard from "./pages/HeadDashboard";
 import GMDashboard from "./pages/GMDashboard";
+
 import AgentEcw from "./pages/AgentEcw";
 import HeadECW from "./pages/HeadECW";
 import GMEcw from "./pages/GMEcw";
+
 import AdminApproval from "./pages/AdminApproval";
-import PrivateRoute from "./components/PrivateRoute";
 import AgentLeaderboard from "./pages/AgentLeaderboard";
 import Ecwleader from "./pages/Ecwleader";
 import BranchReport from "./pages/BranchReport";
 import HeadSubmit from "./pages/HeadSubmit";
 
+import PrivateRoute from "./components/PrivateRoute";
+
 /* ================= ROOT REDIRECT ================= */
 function RootRedirect() {
   const [user, loading] = useAuthState(auth);
   const [role, setRole] = useState(null);
+  const [checkingRole, setCheckingRole] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setCheckingRole(false);
+      return;
+    }
 
-    getDoc(doc(db, "users", user.uid)).then((snap) => {
-      if (snap.exists()) setRole(snap.data().role);
-    });
+    const loadRole = async () => {
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists()) {
+        setRole(snap.data().role);
+      }
+      setCheckingRole(false);
+    };
+
+    loadRole();
   }, [user]);
 
-  if (loading) {
+  /* ⛔ BLOCK until auth + role resolved */
+  if (loading || checkingRole) {
     return (
       <div className="h-screen flex items-center justify-center">
         Loading...
@@ -76,19 +91,12 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/agent/ecw"
           element={
             <PrivateRoute allow={["agent"]}>
               <AgentEcw />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/agent/leaderboard"
-          element={
-            <PrivateRoute allow={["branch_head"]}>
-              <AgentLeaderboard />
             </PrivateRoute>
           }
         />
@@ -102,6 +110,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/head/ecw"
           element={
@@ -110,6 +119,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/head/report"
           element={
@@ -118,11 +128,21 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/head/submit"
           element={
             <PrivateRoute allow={["branch_head"]}>
               <HeadSubmit />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/head/leaderboard"
+          element={
+            <PrivateRoute allow={["branch_head"]}>
+              <AgentLeaderboard />
             </PrivateRoute>
           }
         />
@@ -136,6 +156,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/gm/ecw"
           element={
@@ -144,6 +165,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/gm/leaderboard"
           element={
@@ -152,6 +174,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/gm/ecwleaderboard"
           element={
@@ -160,6 +183,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
+
         <Route
           path="/admin/approvals"
           element={
