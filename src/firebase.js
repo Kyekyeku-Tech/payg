@@ -17,23 +17,11 @@ const firebaseConfig = {
   measurementId: "G-YQ9CL0WR8G",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Analytics (initialize without storing variable)
 getAnalytics(app);
 
-// 🔐 AUTH
 export const auth = getAuth(app);
-
-// ✅ Persist session across refresh
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log("Auth persistence set to LOCAL");
-  })
-  .catch((err) => {
-    console.error("Auth persistence error:", err);
-  });
-
-// 🔥 FIRESTORE
 export const db = getFirestore(app);
+
+/* ✅ KEEP USER LOGGED IN */
+setPersistence(auth, browserLocalPersistence);

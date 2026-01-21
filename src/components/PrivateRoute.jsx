@@ -18,23 +18,18 @@ export default function PrivateRoute({ children, allow }) {
         return;
       }
 
-      try {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        if (mounted && snap.exists()) {
-          setRole(snap.data().role);
-        }
-      } catch (err) {
-        console.error("Role fetch error:", err);
-      } finally {
-        if (mounted) setCheckingRole(false);
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (mounted && snap.exists()) {
+        setRole(snap.data().role);
       }
+      if (mounted) setCheckingRole(false);
     };
 
     loadRole();
     return () => (mounted = false);
   }, [user]);
 
-  // 🛑 ABSOLUTELY CRITICAL
+  /* ⛔ WAIT FOR FIREBASE */
   if (loading || checkingRole) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -43,13 +38,10 @@ export default function PrivateRoute({ children, allow }) {
     );
   }
 
-  // ❌ only now we decide
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
   if (allow && !allow.includes(role)) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;

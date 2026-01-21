@@ -30,38 +30,38 @@ function RootRedirect() {
   const [checkingRole, setCheckingRole] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      setCheckingRole(false);
-      return;
-    }
+    let mounted = true;
 
     const loadRole = async () => {
+      if (!user) {
+        if (mounted) setCheckingRole(false);
+        return;
+      }
+
       const snap = await getDoc(doc(db, "users", user.uid));
-      if (snap.exists()) {
+      if (mounted && snap.exists()) {
         setRole(snap.data().role);
       }
-      setCheckingRole(false);
+      if (mounted) setCheckingRole(false);
     };
 
     loadRole();
+    return () => (mounted = false);
   }, [user]);
 
-  /* ⛔ BLOCK until auth + role resolved */
+  /* ⛔ DO NOTHING UNTIL AUTH IS READY */
   if (loading || checkingRole) {
     return (
       <div className="h-screen flex items-center justify-center">
-        Loading...
+        Restoring session…
       </div>
     );
   }
 
+  /* ❌ NOT LOGGED IN */
   if (!user) return <Navigate to="/login" replace />;
 
-  const lastRoute = localStorage.getItem("lastRoute");
-  if (lastRoute && lastRoute !== "/login") {
-    return <Navigate to={lastRoute} replace />;
-  }
-
+  /* 🎯 ROLE LANDING */
   if (role === "agent") return <Navigate to="/agent/dashboard" replace />;
   if (role === "branch_head") return <Navigate to="/head/dashboard" replace />;
   if (role === "gm") return <Navigate to="/gm/dashboard" replace />;
@@ -78,7 +78,6 @@ export default function App() {
       <Routes>
         {/* ROOT */}
         <Route path="/" element={<RootRedirect />} />
-
 
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
@@ -194,8 +193,8 @@ export default function App() {
           }
         />
 
-        {/* FALLBACK */}
-        <Route path="*" element={<RootRedirect />} />
+        {/* SAFE FALLBACK */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   );
