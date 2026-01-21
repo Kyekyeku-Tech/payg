@@ -77,7 +77,8 @@ export default function App() {
 
       <Routes>
         {/* ROOT */}
-        <Route path="/" element={<RootRedirect />} />
+        <Route path="/" element={<Login />} />
+
 
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
