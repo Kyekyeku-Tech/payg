@@ -141,7 +141,6 @@ const leaderboard = useMemo(() => {
   reports,
   users,
   filterType,
-  exactDate,
   isToday,
   isThisMonth,
   isThisWeek,

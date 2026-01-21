@@ -52,83 +52,98 @@ export default function AgentLeaderboard() {
   }, []);
 
   /* ================= DATE HELPERS ================= */
-  const today = new Date();
+  const todayStr = new Date().toDateString();
+const thisMonth = new Date().getMonth();
+const thisYear = new Date().getFullYear();
 
-  const isToday = (ts) =>
-    ts?.toDate()?.toDateString() === today.toDateString();
+const isToday = React.useCallback(
+  (ts) => ts?.toDate?.()?.toDateString() === todayStr,
+  [todayStr]
+);
 
-  const isThisMonth = (ts) => {
-    const d = ts?.toDate();
-    return (
-      d &&
-      d.getMonth() === today.getMonth() &&
-      d.getFullYear() === today.getFullYear()
-    );
-  };
+const isThisMonth = React.useCallback(
+  (ts) => {
+    const d = ts?.toDate?.();
+    return d && d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+  },
+  [thisMonth, thisYear]
+);
 
-  const isThisWeek = (ts) => {
-    const d = ts?.toDate();
-    if (!d) return false;
+const isThisWeek = React.useCallback((ts) => {
+  const d = ts?.toDate?.();
+  if (!d) return false;
 
-    const start = new Date(today);
-    start.setDate(today.getDate() - today.getDay());
-    start.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const start = new Date(now);
+  start.setDate(now.getDate() - now.getDay());
+  start.setHours(0, 0, 0, 0);
 
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
-    end.setHours(23, 59, 59, 999);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
 
-    return d >= start && d <= end;
-  };
+  return d >= start && d <= end;
+}, []);
 
-  const isExactDate = (ts) => {
+const isExactDate = React.useCallback(
+  (ts) => {
     if (!exactDate) return true;
     const [y, m, d] = exactDate.split("-").map(Number);
-    const rd = ts?.toDate();
+    const rd = ts?.toDate?.();
     return (
       rd &&
       rd.getFullYear() === y &&
       rd.getMonth() === m - 1 &&
       rd.getDate() === d
     );
-  };
+  },
+  [exactDate]
+);
 
-  /* ================= LEADERBOARD ================= */
   const leaderboard = useMemo(() => {
-    const map = {};
+  const map = {};
 
-    reports.forEach((r) => {
-      if (
-        (filterType === "today" && !isToday(r.createdAt)) ||
-        (filterType === "month" && !isThisMonth(r.createdAt)) ||
-        (filterType === "week" && !isThisWeek(r.createdAt)) ||
-        (filterType === "date" && !isExactDate(r.createdAt))
-      ) {
-        return;
-      }
+  reports.forEach((r) => {
+    if (
+      (filterType === "today" && !isToday(r.createdAt)) ||
+      (filterType === "month" && !isThisMonth(r.createdAt)) ||
+      (filterType === "week" && !isThisWeek(r.createdAt)) ||
+      (filterType === "date" && !isExactDate(r.createdAt))
+    ) {
+      return;
+    }
 
-      const uid = r.agentId;
-      if (!uid || !users[uid]) return;
+    const uid = r.agentId;
+    if (!uid || !users[uid]) return;
 
-      if (!map[uid]) {
-        map[uid] = {
-          agentName: users[uid].name || users[uid].email,
-          branch: r.branchId,
-          amount: 0,
-          commission: 0,
-          count: 0,
-        };
-      }
+    if (!map[uid]) {
+      map[uid] = {
+        agentName: users[uid].name || users[uid].email,
+        branch: r.branchId,
+        amount: 0,
+        commission: 0,
+        count: 0,
+      };
+    }
 
-      map[uid].amount += Number(r.amountPaid || 0);
-      map[uid].commission += Number(r.commission || 0);
-      map[uid].count += 1;
-    });
+    map[uid].amount += Number(r.amountPaid || 0);
+    map[uid].commission += Number(r.commission || 0);
+    map[uid].count += 1;
+  });
 
-    return Object.values(map).sort(
-      (a, b) => b.commission - a.commission
-    );
-  }, [reports, users, filterType, exactDate]);
+  return Object.values(map).sort(
+    (a, b) => b.commission - a.commission
+  );
+}, [
+  reports,
+  users,
+  filterType,
+  isToday,
+  isThisMonth,
+  isThisWeek,
+  isExactDate,
+]);
+
 
   /* ================= EXPORT CSV ================= */
   const exportLeaderboardCSV = () => {
