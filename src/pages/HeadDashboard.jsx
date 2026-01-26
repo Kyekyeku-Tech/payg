@@ -26,6 +26,7 @@ export default function HeadDashboard() {
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
+
   /* ================= AUTH ================= */
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -132,30 +133,38 @@ export default function HeadDashboard() {
   const month = new Date().getMonth();
   const year = new Date().getFullYear();
 
-  const totalToday = reports.reduce((s, r) => {
+ const round2 = (n) => Math.round(n * 100) / 100;
+
+const totalToday = round2(
+  reports.reduce((s, r) => {
     if (!r.createdAt?.toDate) return s;
     return r.createdAt.toDate().toDateString() === todayStr
       ? s + Number(r.commission || 0)
       : s;
-  }, 0);
+  }, 0)
+);
 
-  const totalMonth = reports.reduce((s, r) => {
+const totalMonth = round2(
+  reports.reduce((s, r) => {
     if (!r.createdAt?.toDate) return s;
     const d = r.createdAt.toDate();
     return d.getMonth() === month && d.getFullYear() === year
       ? s + Number(r.commission || 0)
       : s;
-  }, 0);
+  }, 0)
+);
 
-  const totalAll = reports.reduce(
+const totalAll = round2(
+  reports.reduce((s, r) => s + Number(r.commission || 0), 0)
+);
+
+const totalFiltered = round2(
+  filteredReports.reduce(
     (s, r) => s + Number(r.commission || 0),
     0
-  );
+  )
+);
 
-  const totalFiltered = filteredReports.reduce(
-    (s, r) => s + Number(r.commission || 0),
-    0
-  );
   /* ================= AGENT TOTAL PERFORMANCE ================= */
 const agentTotals = useMemo(() => {
   const map = {};

@@ -130,7 +130,9 @@ const leaderboard = useMemo(() => {
     }
 
     map[uid].amount += Number(r.amount || 0);
-    map[uid].commission += Number(r.commission || 0);
+    map[uid].commission =
+  Math.round((map[uid].commission + Number(r.commission || 0)) * 100) / 100;
+
     map[uid].count += 1;
   });
 

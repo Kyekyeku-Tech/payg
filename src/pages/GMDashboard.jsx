@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   collection,
   getDocs,
+  getDoc,
   deleteDoc,
   doc,
 } from "firebase/firestore";
@@ -16,6 +17,11 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCallback } from "react";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { serverTimestamp, updateDoc } from "firebase/firestore";
+
+
 
 /* ================= BRANCH LIST ================= */
 const BRANCHES = [
@@ -36,6 +42,20 @@ export default function GMDashboard() {
   const [useRange, setUseRange] = useState(false);
 const [fromDate, setFromDate] = useState("");
 const [toDate, setToDate] = useState("");
+const [currentUser, setCurrentUser] = useState(null);
+const [allUsers, setAllUsers] = useState([]);
+const onlineCount = allUsers.filter(u => u.online).length;
+
+const [showOnlineUsers, setShowOnlineUsers] = useState(false);
+const [showProfile, setShowProfile] = useState(false);
+const [profileForm, setProfileForm] = useState({
+  name: "",
+  phone: "",
+});
+const [savingProfile, setSavingProfile] = useState(false);
+
+
+
 
 
   // table filter only
@@ -53,6 +73,52 @@ const [toDate, setToDate] = useState("");
     };
     load();
   }, []);
+
+  useEffect(() => {
+  const loadUsers = async () => {
+    const snap = await getDocs(collection(db, "users"));
+    setAllUsers(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+      }))
+    );
+  };
+
+  loadUsers();
+}, []);
+
+
+  useEffect(() => {
+  const unsub = onAuthStateChanged(auth, async (u) => {
+    if (!u) return;
+
+    const userRef = doc(db, "users", u.uid);
+
+    // mark online
+    await updateDoc(userRef, {
+      online: true,
+      lastLogin: serverTimestamp(),
+    });
+
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      setCurrentUser({ uid: u.uid, ...snap.data() });
+    }
+  });
+
+  // mark offline on close
+  window.addEventListener("beforeunload", async () => {
+    if (!auth.currentUser) return;
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      online: false,
+      lastSeen: serverTimestamp(),
+    });
+  });
+
+  return () => unsub();
+}, []);
+
     /* ================= RESET PAGE ON FILTER CHANGE ================= */
 useEffect(() => {
   setPage(1);
@@ -301,7 +367,26 @@ const paginatedData = useMemo(() => {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h2 className="text-3xl font-bold">PAYG Management</h2>
+            <h2 className="text-2xl font-bold">
+  Management Page
+</h2>
+
+{currentUser && (
+  <p className="text-sm opacity-70 mt-1">
+    Hi, <span className="font-semibold">{currentUser.name}</span>
+  </p>
+)}
+{currentUser && (
+  <p className="text-xs opacity-60">
+    Logged in as:{" "}
+    {currentUser.role === "gm"
+      ? "Manager"
+      : currentUser.role || "User"}
+    {currentUser.branchId && ` • ${currentUser.branchId}`}
+  </p>
+)}
+
+
             <p className="opacity-70 text-sm">
               Daily & Monthly Tracker
             </p>
@@ -335,11 +420,186 @@ const paginatedData = useMemo(() => {
   ECW Report
 </button>
 
-
-
             <LogoutButton />
+     {currentUser && (
+  <button
+    onClick={() => {
+      setProfileForm({
+        name: currentUser.name || "",
+        phone: currentUser.phone || "",
+      });
+      setShowProfile(true);
+    }}
+    className="
+      flex items-center gap-3
+      px-3 py-1.5
+      rounded-full
+      bg-white/70 dark:bg-white/5
+      backdrop-blur-xl
+      border border-black/5 dark:border-white/20
+      shadow-sm
+      hover:shadow-emerald-500/20
+      transition
+    "
+  >
+    {/* AVATAR */}
+    <div className="relative">
+      <div className="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-white text-sm font-bold">
+        {currentUser.name?.charAt(0)}
+      </div>
+
+      <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-black" />
+    </div>
+
+    <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
+      {currentUser.name?.split(" ")[0]}
+    </span>
+  </button>
+)}
+
+
           </div>
         </div>
+      
+        <button
+  onClick={() => setShowOnlineUsers(s => !s)}
+  className={`relative px-3 py-1.5 rounded-lg text-sm font-medium
+    ${btn}`}
+>
+  👥 Online Users
+
+  {/* GREEN COUNT */}
+  {onlineCount > 0 && (
+    <span className="ml-2 inline-flex items-center gap-2 text-emerald-600 font-semibold">
+      <span className="w-2 h-2 bg-emerald-500 rounded-full" />
+      {onlineCount}
+    </span>
+  )}
+</button>
+{showProfile && currentUser && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-xl border dark:border-white/10">
+      
+      <h3 className="text-lg font-bold mb-4">
+        Edit Profile
+      </h3>
+
+      {/* NAME */}
+      <label className="block text-sm mb-1 opacity-70">
+        Full Name
+      </label>
+      <input
+        value={profileForm.name}
+        onChange={(e) =>
+          setProfileForm({ ...profileForm, name: e.target.value })
+        }
+        className="w-full mb-3 p-2 rounded-lg border dark:bg-black/40"
+      />
+
+      {/* PHONE */}
+      <label className="block text-sm mb-1 opacity-70">
+        Phone (optional)
+      </label>
+      <input
+        value={profileForm.phone}
+        onChange={(e) =>
+          setProfileForm({ ...profileForm, phone: e.target.value })
+        }
+        className="w-full mb-4 p-2 rounded-lg border dark:bg-black/40"
+      />
+
+      {/* READ ONLY INFO */}
+      <p className="text-xs opacity-60 mb-4">
+        Role: {currentUser.role} <br />
+        Branch: {currentUser.branchId || "N/A"}
+      </p>
+
+      {/* ACTIONS */}
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowProfile(false)}
+          className="px-4 py-2 rounded-lg border"
+        >
+          Cancel
+        </button>
+
+        <button
+          disabled={savingProfile}
+          onClick={async () => {
+            try {
+              setSavingProfile(true);
+              await updateDoc(
+                doc(db, "users", currentUser.uid),
+                {
+                  name: profileForm.name,
+                  phone: profileForm.phone,
+                }
+              );
+              setCurrentUser((u) => ({
+                ...u,
+                name: profileForm.name,
+                phone: profileForm.phone,
+              }));
+              setShowProfile(false);
+            } catch (err) {
+              alert("Failed to update profile");
+            } finally {
+              setSavingProfile(false);
+            }
+          }}
+          className="px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 disabled:opacity-50"
+        >
+          {savingProfile ? "Saving..." : "Save Changes"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
+
+      {showOnlineUsers && (
+  <div className={`mb-6 p-4 rounded-2xl ${card}`}>
+    <div className="flex justify-between items-center mb-3">
+      <p className="text-sm font-semibold opacity-70">
+        Logged-in Users
+      </p>
+
+      <button
+        onClick={() => setShowOnlineUsers(false)}
+        className="text-xs opacity-60 hover:opacity-100"
+      >
+        Close
+      </button>
+    </div>
+
+   <div className="flex flex-wrap gap-3">
+  {allUsers
+    .filter(u => u.online) // 👈 ONLY ONLINE
+    .map((u) => (
+      <div
+        key={u.id}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border"
+      >
+        {/* GREEN DOT */}
+        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+
+        <span className="font-medium">
+          {u.name}
+        </span>
+
+        <span className="text-xs opacity-60">
+          {u.role || "User"}
+        </span>
+      </div>
+    ))}
+</div>
+
+  </div>
+)}
+
+
 
        {/* ================= GLOBAL DASHBOARD ================= */}
 <div className="grid md:grid-cols-4 gap-4 mb-6">

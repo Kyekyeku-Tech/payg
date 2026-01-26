@@ -10,7 +10,7 @@ import Login from "./pages/Login";
 import AgentDashboard from "./pages/Agentdashboard";
 import HeadDashboard from "./pages/HeadDashboard";
 import GMDashboard from "./pages/GMDashboard";
-
+import ForgotPassword from "./pages/ForgotPassword";
 import AgentEcw from "./pages/AgentEcw";
 import HeadECW from "./pages/HeadECW";
 import GMEcw from "./pages/GMEcw";
@@ -81,6 +81,8 @@ export default function App() {
 
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
 
         {/* ================= AGENT ================= */}
         <Route

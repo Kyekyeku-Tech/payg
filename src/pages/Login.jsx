@@ -160,7 +160,7 @@ export default function Login() {
           <div>
             <h2 className="text-3xl font-extrabold flex items-center gap-2">
               <ShieldCheck className="text-sky-500" />
-              PAYG System
+              PAYG & ECW
             </h2>
             <p className="text-sm opacity-70">
               {isRegister ? "Create a new account" : "Sign in to continue"}
@@ -265,6 +265,33 @@ export default function Login() {
             ? "Already have an account? Sign In"
             : "Create new user account"}
         </button>
+       <button
+  type="button"
+  onClick={() => navigate("/forgot-password")}
+  className="
+    group
+    w-full flex justify-end items-center gap-2
+    text-sm font-medium
+    text-slate-500 dark:text-slate-400
+    hover:text-sky-600 dark:hover:text-sky-400
+    transition-colors
+  "
+>
+  <span className="relative">
+    Forgot password?
+    <span
+      className="
+        absolute left-0 -bottom-0.5
+        w-0 h-[1px]
+        bg-sky-500
+        transition-all duration-300
+        group-hover:w-full
+      "
+    />
+  </span>
+</button>
+
+
       </motion.div>
     </div>
   );
