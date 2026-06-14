@@ -7,18 +7,23 @@ import RouteTracker from "./components/RouteTracker";
 
 /* ================= PAGES ================= */
 import Login from "./pages/Login";
-import AgentDashboard from "./pages/Agentdashboard";
+import AgentDashboard from "./pages/Dsrdashboard";
 import HeadDashboard from "./pages/HeadDashboard";
-import GMDashboard from "./pages/GMDashboard";
+import GMDashboard from "./pages/ManagementDashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import AgentEcw from "./pages/AgentEcw";
+import AgentCustomerRegister from "./pages/AgentCustomerRegister";
+import AgentCustomerList from "./pages/AgentCustomerList";
+import BAgentRegistration from "./pages/BAgentRegistration";
+import BAgentList from "./pages/BAgentList";
 import HeadECW from "./pages/HeadECW";
 import GMEcw from "./pages/GMEcw";
+import GMCustomerList from "./pages/GMcustomerlist";
 
 import AdminApproval from "./pages/AdminApproval";
-import AgentLeaderboard from "./pages/AgentLeaderboard";
+import AgentLeaderboard from "./pages/PaygLeaderboard";
 import Ecwleader from "./pages/Ecwleader";
-import BranchReport from "./pages/BranchReport";
+import BranchReport from "./pages/HeadReport";
 import HeadSubmit from "./pages/HeadSubmit";
 
 import PrivateRoute from "./components/PrivateRoute";
@@ -72,12 +77,13 @@ function RootRedirect() {
 /* ================= APP ================= */
 export default function App() {
   return (
-    <BrowserRouter>
-      <RouteTracker />
+    <div className="app-modern">
+      <BrowserRouter>
+        <RouteTracker />
 
-      <Routes>
-        {/* ROOT */}
-        <Route path="/" element={<RootRedirect />} />
+        <Routes>
+          {/* ROOT */}
+          <Route path="/" element={<RootRedirect />} />
 
         {/* LOGIN */}
         <Route path="/login" element={<Login />} />
@@ -99,6 +105,24 @@ export default function App() {
           element={
             <PrivateRoute allow={["agent"]}>
               <AgentEcw />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/agent/customers/new"
+          element={
+            <PrivateRoute allow={["agent"]}>
+              <AgentCustomerRegister />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/agent/customers"
+          element={
+            <PrivateRoute allow={["agent"]}>
+              <AgentCustomerList />
             </PrivateRoute>
           }
         />
@@ -127,6 +151,24 @@ export default function App() {
           element={
             <PrivateRoute allow={["branch_head"]}>
               <BranchReport />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/head/customers/new"
+          element={
+            <PrivateRoute allow={["branch_head"]}>
+              <BAgentRegistration />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/head/customers"
+          element={
+            <PrivateRoute allow={["branch_head"]}>
+              <BAgentList />
             </PrivateRoute>
           }
         />
@@ -169,6 +211,15 @@ export default function App() {
         />
 
         <Route
+          path="/gm/customers"
+          element={
+            <PrivateRoute allow={["gm"]}>
+              <GMCustomerList />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
           path="/gm/leaderboard"
           element={
             <PrivateRoute allow={["gm"]}>
@@ -196,8 +247,9 @@ export default function App() {
         />
 
         {/* SAFE FALLBACK */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 }

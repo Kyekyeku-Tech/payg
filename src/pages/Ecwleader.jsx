@@ -20,7 +20,7 @@ import {
   Tooltip,
 } from "recharts";
 
-export default function AgentLeaderboard() {
+export default function Ecwleader() {
   const navigate = useNavigate();
 
   /* ================= STATE ================= */

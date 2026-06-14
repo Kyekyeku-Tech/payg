@@ -400,12 +400,19 @@ const paginatedData = useMemo(() => {
               {theme === "light" ? <Moon /> : <Sun />}
             </button>
 
-            <button
+<button
   onClick={() => navigate("/admin/approvals")}
   className="px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm font-medium flex items-center gap-1"
 >
   <Users size={14} />
   Approvals
+</button>
+<button
+  onClick={() => navigate("/gm/customers")}
+  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium flex items-center gap-1"
+>
+  <Users size={14} />
+  Customers
 </button>
 <button
   onClick={() => navigate("/gm/leaderboard")}

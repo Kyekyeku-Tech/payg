@@ -1,3 +1,335 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --modern-bg: #f5f7fb;
+  --modern-bg-soft: #eef4f8;
+  --modern-panel: rgba(255, 255, 255, 0.86);
+  --modern-panel-strong: rgba(255, 255, 255, 0.96);
+  --modern-border: rgba(15, 23, 42, 0.979);
+  --modern-border-strong: rgba(15, 23, 42, 0.966);
+  --modern-text: #0f172a;
+  --modern-muted: #64748b;
+  --modern-shadow: 0 18px 50px rgba(15, 23, 42, 0.09);
+  --modern-shadow-soft: 0 8px 28px rgba(15, 23, 42, 0.07);
+  --modern-accent: #0ea5e9;
+  --modern-accent-strong: #0284c7;
+  --modern-success: #10b981;
+  --modern-danger: #dc2626;
+}
+
+html {
+  background: var(--modern-bg);
+}
+
+body {
+  margin: 0;
+  color: var(--modern-text);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 247, 251, 0.96)),
+    linear-gradient(135deg, #eef7f8 0%, #f7f8fb 42%, #edf3ff 100%);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+.app-modern {
+  min-height: 100vh;
+  color: var(--modern-text);
+}
+
+.app-modern .min-h-screen,
+.app-modern .h-screen {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(245, 247, 251, 0.98)),
+    linear-gradient(135deg, #eef7f8 0%, #f7f8fb 48%, #edf3ff 100%) !important;
+  color: var(--modern-text);
+}
+
+.app-modern .bg-slate-900,
+.app-modern .bg-gradient-to-br {
+  background:
+    linear-gradient(180deg, rgba(9, 15, 26, 0.94), rgba(15, 23, 42, 0.98)),
+    linear-gradient(135deg, #06111f 0%, #0f172a 48%, #083344 100%) !important;
+  color: #f8fafc;
+}
+
+.app-modern .max-w-md,
+.app-modern .max-w-5xl,
+.app-modern .max-w-6xl,
+.app-modern .max-w-7xl {
+  width: min(100%, calc(100vw - 24px));
+}
+
+.app-modern h1,
+.app-modern h2,
+.app-modern h3 {
+  letter-spacing: 0;
+  line-height: 1.08;
+}
+
+.app-modern h1,
+.app-modern h2 {
+  color: inherit;
+}
+
+.app-modern p {
+  letter-spacing: 0;
+}
+
+.app-modern .bg-white,
+.app-modern .bg-white\/5,
+.app-modern .bg-white\/10,
+.app-modern .bg-black\/5,
+.app-modern .bg-black\/10 {
+  background: var(--modern-panel) !important;
+  border: 1px solid var(--modern-border) !important;
+  border-color: var(--modern-border) !important;
+  box-shadow: var(--modern-shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.app-modern .bg-gradient-to-br .bg-white,
+.app-modern .bg-gradient-to-br .bg-white\/5,
+.app-modern .bg-gradient-to-br .bg-white\/10,
+.app-modern .bg-slate-900 .bg-white,
+.app-modern .bg-slate-900 .bg-white\/5,
+.app-modern .bg-slate-900 .bg-white\/10 {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.24);
+}
+
+.app-modern [class*="border-black"],
+.app-modern [class*="border-white"],
+.app-modern [class*="border-slate"] {
+  border-color: var(--modern-border) !important;
+}
+
+.app-modern .bg-gradient-to-br [class*="border-black"],
+.app-modern .bg-gradient-to-br [class*="border-white"],
+.app-modern .bg-gradient-to-br [class*="border-slate"],
+.app-modern .bg-slate-900 [class*="border-black"],
+.app-modern .bg-slate-900 [class*="border-white"],
+.app-modern .bg-slate-900 [class*="border-slate"] {
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+.app-modern .rounded-3xl,
+.app-modern .rounded-2xl,
+.app-modern .rounded-xl,
+.app-modern .rounded-lg {
+  border-radius: 8px !important;
+}
+
+.app-modern input,
+.app-modern select,
+.app-modern textarea {
+  min-height: 44px;
+  border-radius: 8px !important;
+  border: 1px solid var(--modern-border-strong) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--modern-text) !important;
+  box-shadow: inset 0 1px 0 rgba(31, 1, 1, 0.973);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.app-modern .bg-gradient-to-br input,
+.app-modern .bg-gradient-to-br select,
+.app-modern .bg-gradient-to-br textarea,
+.app-modern .bg-slate-900 input,
+.app-modern .bg-slate-900 select,
+.app-modern .bg-slate-900 textarea {
+  background: rgba(15, 23, 42, 0.56) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  color: #f8fafc !important;
+}
+
+.app-modern input::placeholder,
+.app-modern textarea::placeholder {
+  color: #94a3b8;
+}
+
+.app-modern input:focus,
+.app-modern select:focus,
+.app-modern textarea:focus {
+  border-color: rgba(14, 165, 233, 0.75) !important;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.14) !important;
+  outline: none;
+}
+
+.app-modern option {
+  background: #ffffff;
+  color: var(--modern-text);
+}
+
+.app-modern button {
+  border-radius: 8px !important;
+  letter-spacing: 0;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.app-modern button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.app-modern button:disabled {
+  cursor: not-allowed;
+}
+
+.app-modern button.bg-black,
+.app-modern button.bg-sky-600,
+.app-modern button.bg-blue-600,
+.app-modern button.bg-emerald-600 {
+  background: linear-gradient(135deg, #0f172a 0%, #0369a1 54%, #0f766e 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 12px 24px rgba(2, 132, 199, 0.22);
+  color: #ffffff !important;
+}
+
+.app-modern button.bg-blue-500,
+.app-modern button.bg-sky-500 {
+  background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%) !important;
+  color: #ffffff !important;
+}
+
+.app-modern .bg-emerald-500,
+.app-modern .text-emerald-500,
+.app-modern .text-emerald-600 {
+  color: var(--modern-success) !important;
+}
+
+.app-modern button.bg-yellow-500,
+.app-modern button.bg-yellow-400 {
+  background: linear-gradient(135deg, #f59e0b 0%, #10b981 100%) !important;
+  color: #07111f !important;
+}
+
+.app-modern button.bg-red-600,
+.app-modern button.bg-red-500 {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+}
+
+.app-modern table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.app-modern thead {
+  background: rgba(248, 250, 252, 0.86);
+}
+
+.app-modern .bg-gradient-to-br thead,
+.app-modern .bg-slate-900 thead {
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.app-modern th {
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.app-modern .bg-gradient-to-br th,
+.app-modern .bg-slate-900 th {
+  color: #cbd5e1;
+}
+
+.app-modern td {
+  color: inherit;
+  vertical-align: middle;
+}
+
+.app-modern tr {
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.app-modern tbody tr {
+  transition: background 140ms ease;
+}
+
+.app-modern tbody tr:hover {
+  background: rgba(14, 165, 233, 0.06);
+}
+
+.app-modern .overflow-x-auto {
+  border: 1px solid var(--modern-border);
+  box-shadow: var(--modern-shadow-soft);
+  background: var(--modern-panel-strong);
+}
+
+.app-modern .bg-gradient-to-br .overflow-x-auto,
+.app-modern .bg-slate-900 .overflow-x-auto {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.app-modern .shadow-2xl,
+.app-modern .shadow-xl {
+  box-shadow: var(--modern-shadow) !important;
+}
+
+.app-modern .opacity-60,
+.app-modern .opacity-70 {
+  opacity: 1 !important;
+  color: var(--modern-muted);
+}
+
+.app-modern .bg-gradient-to-br .opacity-60,
+.app-modern .bg-gradient-to-br .opacity-70,
+.app-modern .bg-slate-900 .opacity-60,
+.app-modern .bg-slate-900 .opacity-70 {
+  color: #cbd5e1;
+}
+
+.app-modern .underline {
+  text-underline-offset: 4px;
+  text-decoration-thickness: 1px;
+}
+
+.app-modern svg {
+  flex-shrink: 0;
+}
+
+.app-modern ::selection {
+  background: rgba(14, 165, 233, 0.24);
+}
+
+@media (max-width: 640px) {
+  .app-modern .p-8 {
+    padding: 1.25rem !important;
+  }
+
+  .app-modern .p-6 {
+    padding: 1rem !important;
+  }
+
+  .app-modern .text-3xl {
+    font-size: 1.5rem !important;
+  }
+
+  .app-modern .text-2xl {
+    font-size: 1.25rem !important;
+  }
+
+  .app-modern table {
+    min-width: 720px;
+  }
+}

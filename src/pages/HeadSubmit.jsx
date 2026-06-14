@@ -45,7 +45,7 @@ const calcAmountServed = (amount, branchId) => {
   return Number((paid + commission).toFixed(2));
 };
 
-export default function AgentECW() {
+export default function HeadSubmit() {
     const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);

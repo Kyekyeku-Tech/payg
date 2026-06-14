@@ -15,7 +15,7 @@ import { Moon, Sun } from "lucide-react";
 
 const PAGE_SIZE = 10;
 
-export default function HeadDashboard() {
+export default function HeadECW() {
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
   const [agents, setAgents] = useState({});
